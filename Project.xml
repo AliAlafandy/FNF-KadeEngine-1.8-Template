@@ -31,8 +31,17 @@
 
 	<classpath name="source" />
 
-	<assets path="assets/preload" rename="assets" exclude="*.ogg" if="web"/>
-	<assets path="assets/preload" rename="assets" exclude="*.mp3" unless="web"/>
+	<define name="ASTC_TEXTURES" if="mobile" unless="no-astc" />
+
+	<section if="ASTC_TEXTURES">
+		<assets path="assets/preload" rename="assets" include="*.astc" exclude="*.png"/>
+		<assets path="assets/preload" rename="assets" exclude="*.astc;*.ogg;*.mp3;*.png"/>
+	</section>
+
+	<section unless="ASTC_TEXTURES">
+		<assets path="assets/preload" rename="assets" exclude="*.astc;*.ogg" if="web"/>
+		<assets path="assets/preload" rename="assets" exclude="*.astc;*.mp3" unless="web"/>
+	</section>
 
 	<define name="PRELOAD_ALL" unless="web" />
 	<define name="NO_PRELOAD_ALL" unless="PRELOAD_ALL"/>
@@ -63,26 +72,51 @@
 		<library name="sm" preload="false" />
 	</section>
 
-	<assets path="assets/songs" library="songs" exclude="*.ogg" if="web"/>
-	<assets path="assets/songs" library="songs" exclude="*.mp3" unless="web"/>
-	<assets path="assets/shared" library="shared" exclude="*.ogg" if="web"/>
-	<assets path="assets/shared" library="shared" exclude="*.mp3" unless="web"/>
-	<assets path="assets/tutorial" library="tutorial" exclude="*.ogg" if="web"/>
-	<assets path="assets/tutorial" library="tutorial" exclude="*.mp3" unless="web"/>
-	<assets path="assets/week1" library="week1" exclude="*.ogg" if="web"/>
-	<assets path="assets/week1" library="week1" exclude="*.mp3" unless="web"/>
-	<assets path="assets/week2" library="week2" exclude="*.ogg" if="web"/>
-	<assets path="assets/week2" library="week2" exclude="*.mp3" unless="web"/>
-	<assets path="assets/week3" library="week3" exclude="*.ogg" if="web"/>
-	<assets path="assets/week3" library="week3" exclude="*.mp3" unless="web"/>
-	<assets path="assets/week4" library="week4" exclude="*.ogg" if="web"/>
-	<assets path="assets/week4" library="week4" exclude="*.mp3" unless="web"/>
-	<assets path="assets/week5" library="week5" exclude="*.ogg" if="web"/>
-	<assets path="assets/week5" library="week5" exclude="*.mp3" unless="web"/>
-	<assets path="assets/week6" library="week6" exclude="*.ogg" if="web"/>
-	<assets path="assets/week6" library="week6" exclude="*.mp3" unless="web"/>
-	<assets path="assets/sm" library="sm" exclude="*.ogg" if="web"/>
-	<assets path="assets/sm" library="sm" exclude="*.mp3" unless="web"/>
+	<section if="ASTC_TEXTURES">
+		<assets path="assets/songs" library="songs" include="*.astc" exclude="*.png"/>
+		<assets path="assets/songs" library="songs" exclude="*.astc;*.ogg;*.mp3;*.png"/>
+		<assets path="assets/shared" library="shared" include="*.astc" exclude="*.png"/>
+		<assets path="assets/shared" library="shared" exclude="*.astc;*.ogg;*.mp3;*.png"/>
+		<assets path="assets/tutorial" library="tutorial" include="*.astc" exclude="*.png"/>
+		<assets path="assets/tutorial" library="tutorial" exclude="*.astc;*.ogg;*.mp3;*.png"/>
+		<assets path="assets/week1" library="week1" include="*.astc" exclude="*.png"/>
+		<assets path="assets/week1" library="week1" exclude="*.astc;*.ogg;*.mp3;*.png"/>
+		<assets path="assets/week2" library="week2" include="*.astc" exclude="*.png"/>
+		<assets path="assets/week2" library="week2" exclude="*.astc;*.ogg;*.mp3;*.png"/>
+		<assets path="assets/week3" library="week3" include="*.astc" exclude="*.png"/>
+		<assets path="assets/week3" library="week3" exclude="*.astc;*.ogg;*.mp3;*.png"/>
+		<assets path="assets/week4" library="week4" include="*.astc" exclude="*.png"/>
+		<assets path="assets/week4" library="week4" exclude="*.astc;*.ogg;*.mp3;*.png"/>
+		<assets path="assets/week5" library="week5" include="*.astc" exclude="*.png"/>
+		<assets path="assets/week5" library="week5" exclude="*.astc;*.ogg;*.mp3;*.png"/>
+		<assets path="assets/week6" library="week6" include="*.astc" exclude="*.png"/>
+		<assets path="assets/week6" library="week6" exclude="*.astc;*.ogg;*.mp3;*.png"/>
+		<assets path="assets/sm" library="sm" include="*.astc" exclude="*.png"/>
+		<assets path="assets/sm" library="sm" exclude="*.astc;*.ogg;*.mp3;*.png"/>
+	</section>
+
+	<section unless="ASTC_TEXTURES">
+		<assets path="assets/songs" library="songs" exclude="*.astc;*.ogg" if="web"/>
+		<assets path="assets/songs" library="songs" exclude="*.astc;*.mp3" unless="web"/>
+		<assets path="assets/shared" library="shared" exclude="*.astc;*.ogg" if="web"/>
+		<assets path="assets/shared" library="shared" exclude="*.astc;*.mp3" unless="web"/>
+		<assets path="assets/tutorial" library="tutorial" exclude="*.astc;*.ogg" if="web"/>
+		<assets path="assets/tutorial" library="tutorial" exclude="*.astc;*.mp3" unless="web"/>
+		<assets path="assets/week1" library="week1" exclude="*.astc;*.ogg" if="web"/>
+		<assets path="assets/week1" library="week1" exclude="*.astc;*.mp3" unless="web"/>
+		<assets path="assets/week2" library="week2" exclude="*.astc;*.ogg" if="web"/>
+		<assets path="assets/week2" library="week2" exclude="*.astc;*.mp3" unless="web"/>
+		<assets path="assets/week3" library="week3" exclude="*.astc;*.ogg" if="web"/>
+		<assets path="assets/week3" library="week3" exclude="*.astc;*.mp3" unless="web"/>
+		<assets path="assets/week4" library="week4" exclude="*.astc;*.ogg" if="web"/>
+		<assets path="assets/week4" library="week4" exclude="*.astc;*.mp3" unless="web"/>
+		<assets path="assets/week5" library="week5" exclude="*.astc;*.ogg" if="web"/>
+		<assets path="assets/week5" library="week5" exclude="*.astc;*.mp3" unless="web"/>
+		<assets path="assets/week6" library="week6" exclude="*.astc;*.ogg" if="web"/>
+		<assets path="assets/week6" library="week6" exclude="*.astc;*.mp3" unless="web"/>
+		<assets path="assets/sm" library="sm" exclude="*.astc;*.ogg" if="web"/>
+		<assets path="assets/sm" library="sm" exclude="*.astc;*.mp3" unless="web"/>
+	</section>
 
 	<assets path='example_mods' rename='mods' embed='false'/>
 	<assets path='art/readme.txt' rename='do NOT readme.txt' />
