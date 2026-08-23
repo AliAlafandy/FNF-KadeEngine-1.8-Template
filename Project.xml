@@ -177,4 +177,6 @@
 	<permission name="android.permission.READ_EXTERNAL_STORAGE" if="android"/>
 	<permission name="android.permission.INTERNET" if="android"/>
 
+	<certificate path="release.keystore" alias="ANDROID_KEY_ALIAS_PLACEHOLDER" if="android"/>
+
 </project>
