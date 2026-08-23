@@ -21,7 +21,7 @@ on:
 
 env:
   HAXE_VERSION: 4.3.7
-  LIME_VERSION: 8.2.2
+  LIME_VERSION: 8.3.2
   PROJECT_NAME: KadeEngine
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
@@ -53,7 +53,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.HAXELIB_ROOT }}
-          key: haxelib-${{ inputs.os }}-${{ env.HAXE_VERSION }}-${{ hashFiles('**/hmm.json', '**/Project.xml') }}
+          key: haxelib-${{ inputs.os }}-${{ env.HAXE_VERSION }}-${{ hashFiles('**/hmm.json') }}
           restore-keys: |
             haxelib-${{ inputs.os }}-${{ env.HAXE_VERSION }}-
 
@@ -74,26 +74,19 @@ jobs:
         with:
           xcode-version: '16.4'
 
-      - name: Install Libraries
+      - name: Install hmm
+        shell: bash
+        run: haxelib install hmm --quiet
+
+      - name: Install dependencies via hmm
+        shell: bash
+        run: haxelib run hmm install
+
+      - name: Setup Lime
         shell: bash
         run: |
-          haxelib install lime ${{ env.LIME_VERSION }} --quiet
           haxelib run lime setup -alias -y
-          haxelib install openfl --quiet
-          haxelib install flixel --quiet
-          haxelib install flixel-tools --quiet
-          haxelib install flixel-addons --quiet
-          haxelib install flixel-ui --quiet
-          haxelib install hscript --quiet
-          haxelib install actuate --quiet
-          haxelib git faxe https://github.com/uhrobots/faxe
-          haxelib git polymod https://github.com/EliteMasterEric/polymod.git
-          haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
-          haxelib git extension-webm https://github.com/KadeDev/extension-webm
-          haxelib git linc_luajit https://github.com/nebulazorua/linc_luajit.git
-          haxelib git hxvm-luajit https://github.com/nebulazorua/hxvm-luajit
           haxelib run lime setup flixel
-          haxelib list
 
       - name: Rebuild extension-webm
         if: inputs.name != 'Android x64' && inputs.name != 'Android x32' && inputs.name != 'iOS'
