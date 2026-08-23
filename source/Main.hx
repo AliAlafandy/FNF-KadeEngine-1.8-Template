@@ -15,33 +15,33 @@ import openfl.Assets;
 import openfl.Lib;
 import openfl.display.FPS;
 import openfl.display.Sprite;
+import openfl.display.StageAlign;
+import openfl.display.StageScaleMode;
 import openfl.events.Event;
+import openfl.events.KeyboardEvent;
 import lime.system.System;
+import mobile.backend.StorageUtil;
 
 class Main extends Sprite
 {
-	var gameWidth:Int = 1280; // Width of the game in pixels (might be less / more in actual pixels depending on your zoom).
-	var gameHeight:Int = 720; // Height of the game in pixels (might be less / more in actual pixels depending on your zoom).
-	var initialState:Class<FlxState> = TitleState; // The FlxState the game starts with.
-	var zoom:Float = -1; // If -1, zoom is automatically calculated to fit the window dimensions.
-	var framerate:Int = 60; // How many frames per second the game should run at.
-	var skipSplash:Bool = true; // Whether to skip the flixel splash screen that appears in release mode.
-	var startFullscreen:Bool = false; // Whether to start the game in fullscreen on desktop targets
+	var gameWidth:Int = 1280;
+	var gameHeight:Int = 720;
+	var initialState:Class<FlxState> = TitleState;
+	var zoom:Float = -1;
+	var framerate:Int = 60;
+	var skipSplash:Bool = true;
+	var startFullscreen:Bool = false;
 
 	public static var bitmapFPS:Bitmap;
 
 	public static var instance:Main;
 
-	public static var path:String = System.applicationStorageDirectory;
+	public static var path:String = StorageUtil.baseDirectory;
 
-	public static var watermarks = true; // Whether to put Kade Engine literally anywhere
-
-	// You can pretty much ignore everything from here on - your code should go in your states.
+	public static var watermarks = true;
 
 	public static function main():Void
 	{
-		// quick checks
-
 		Lib.current.addChild(new Main());
 	}
 
@@ -91,16 +91,20 @@ class Main extends Sprite
 		gameWidth = 1280;
 		gameHeight = 720;
 		zoom = 1;
+
+		stage.align = StageAlign.TOP_LEFT;
+		stage.scaleMode = StageScaleMode.NO_SCALE;
+
+		setupMobileBackHandling();
+		setupMobileLifecycle();
 		#end
 
 		#if !cpp
 		framerate = 60;
 		#end
 
-		// Run this first so we can see logs.
 		Debug.onInitProgram();
 
-		// Gotta run this before any assets get loaded.
 		ModCore.initialize();
 
 		fpsCounter = new KadeEngineFPS(10, 3, 0xFFFFFF);
@@ -110,23 +114,62 @@ class Main extends Sprite
 		game = new FlxGame(gameWidth, gameHeight, initialState, zoom, framerate, framerate, skipSplash, startFullscreen);
 		addChild(game);
 
-
 		addChild(fpsCounter);
 		toggleFPS(FlxG.save.data.fps);
 
-		// Finish up loading debug tools.
 		Debug.onGameStart();
 	}
+
+	#if mobile
+	private function setupMobileBackHandling():Void
+	{
+		stage.addEventListener(KeyboardEvent.KEY_DOWN, onMobileKeyDown);
+	}
+
+	private function onMobileKeyDown(e:KeyboardEvent):Void
+	{
+		if (e.keyCode == 27)
+		{
+			e.preventDefault();
+
+			if (Std.isOfType(FlxG.state, PauseSubState) || Reflect.hasField(FlxG.state, 'onMobileBack'))
+			{
+				Reflect.callMethod(FlxG.state, Reflect.field(FlxG.state, 'onMobileBack'), []);
+			}
+		}
+	}
+
+	private function setupMobileLifecycle():Void
+	{
+		Application.current.window.onFocusOut.add(onMobileFocusOut);
+		Application.current.window.onFocusIn.add(onMobileFocusIn);
+	}
+
+	private function onMobileFocusOut():Void
+	{
+		if (FlxG.sound.music != null)
+			FlxG.sound.music.pause();
+
+		for (sound in FlxG.sound.list.members)
+		{
+			if (sound != null && sound.playing)
+				sound.pause();
+		}
+	}
+
+	private function onMobileFocusIn():Void
+	{
+		if (FlxG.sound.music != null && !FlxG.sound.music.playing)
+			FlxG.sound.music.resume();
+	}
+	#end
 
 	var game:FlxGame;
 
 	var fpsCounter:KadeEngineFPS;
 
-	// taken from forever engine, cuz optimization very pog.
-	// thank you shubs :)
 	public static function dumpCache()
 	{
-		///* SPECIAL THANKS TO HAYA
 		@:privateAccess
 		for (key in FlxG.bitmap._cache.keys())
 		{
@@ -139,11 +182,12 @@ class Main extends Sprite
 			}
 		}
 		Assets.cache.clear("songs");
-		// */
 	}
 
 	public function toggleFPS(fpsEnabled:Bool):Void
 	{
+		fpsCounter.visible = fpsEnabled;
+		bitmapFPS.visible = fpsEnabled;
 	}
 
 	public function changeFPSColor(color:FlxColor)
