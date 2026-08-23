@@ -3,11 +3,10 @@ package;
 import flixel.graphics.FlxGraphic;
 import flixel.FlxG;
 import flixel.graphics.frames.FlxAtlasFrames;
+import openfl.media.Sound;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
-import openfl.display.BitmapData;
 import haxe.Json;
-import mobile.backend.StorageUtil;
 
 #if ASTC_TEXTURES
 import mobile.backend.ASTCLoader;
@@ -19,13 +18,13 @@ class Paths
 {
 	inline public static var SOUND_EXT = #if web "mp3" #else "ogg" #end;
 
-	#if ASTC_TEXTURES
-	inline public static var IMAGE_EXT = "astc";
-	#else
-	inline public static var IMAGE_EXT = "png";
-	#end
+	inline public static var VIDEO_EXT = "webm";
 
 	static var currentLevel:String;
+
+	static var graphicCache:Map<String, FlxGraphic> = new Map();
+
+	static var soundCache:Map<String, Sound> = new Map();
 
 	static public function setCurrentLevel(name:String)
 	{
@@ -51,91 +50,54 @@ class Paths
 		return getPreloadPath(file);
 	}
 
-	static function externalModsPath(relativePath:String, ?library:String):String
-	{
-		#if mobile
-		var candidate = 'mods/$relativePath';
-		if (StorageUtil.exists(candidate))
-			return candidate;
-
-		if (library != null)
-		{
-			candidate = 'mods/$library/$relativePath';
-			if (StorageUtil.exists(candidate))
-				return candidate;
-		}
-		#end
-
-		return null;
-	}
-
 	static public function loadImage(key:String, ?library:String):FlxGraphic
 	{
-		#if mobile
-		var externalRelative = externalModsPath('images/$key.png', library);
-		if (externalRelative != null)
-		{
-			var externalGraphic = loadExternalImage(externalRelative, key);
-			if (externalGraphic != null)
-				return externalGraphic;
-		}
-		#end
-
 		var path = image(key, library);
 
-		#if FEATURE_FILESYSTEM
-		if (Caching.bitmapData != null)
+		if (graphicCache.exists(path))
 		{
-			if (Caching.bitmapData.exists(key))
-			{
-				Debug.logTrace('Loading image from bitmap cache: $key');
-				return Caching.bitmapData.get(key);
-			}
+			var cached = graphicCache.get(path);
+
+			if (cached != null && cached.bitmap != null)
+				return cached;
+
+			graphicCache.remove(path);
+		}
+
+		#if FEATURE_FILESYSTEM
+		if (Caching.bitmapData != null && Caching.bitmapData.exists(key))
+		{
+			var cached = Caching.bitmapData.get(key);
+			graphicCache.set(path, cached);
+			return cached;
 		}
 		#end
 
 		#if ASTC_TEXTURES
-		var astcGraphic = loadASTCImage(path, key);
+		var astcGraphic = tryLoadASTC(path, key);
 		if (astcGraphic != null)
+		{
+			graphicCache.set(path, astcGraphic);
 			return astcGraphic;
+		}
 		#end
 
-		if (OpenFlAssets.exists(path, IMAGE))
-		{
-			var bitmap = OpenFlAssets.getBitmapData(path);
-			return FlxGraphic.fromBitmapData(bitmap);
-		}
-		else
+		if (!OpenFlAssets.exists(path, IMAGE))
 		{
 			Debug.logWarn('Could not find image at path $path');
 			return null;
 		}
+
+		var bitmap = OpenFlAssets.getBitmapData(path);
+		var graphic = FlxGraphic.fromBitmapData(bitmap, false, key);
+
+		graphicCache.set(path, graphic);
+
+		return graphic;
 	}
-
-	#if mobile
-	static function loadExternalImage(relativePath:String, key:String):FlxGraphic
-	{
-		var bytes = StorageUtil.readBytes(relativePath);
-
-		if (bytes == null)
-			return null;
-
-		try
-		{
-			var limeImage = lime.graphics.Image.fromBytes(bytes);
-			var bitmap = BitmapData.fromImage(limeImage);
-			return FlxGraphic.fromBitmapData(bitmap, false, key);
-		}
-		catch (e:Dynamic)
-		{
-			Debug.logWarn('Failed decoding external image: $relativePath');
-			return null;
-		}
-	}
-	#end
 
 	#if ASTC_TEXTURES
-	static function loadASTCImage(path:String, key:String):FlxGraphic
+	static function tryLoadASTC(path:String, key:String):FlxGraphic
 	{
 		var astcPath = toASTCPath(path);
 
@@ -147,12 +109,10 @@ class Paths
 		if (bytes == null)
 			return null;
 
-		var bitmap = ASTCLoader.decode(bytes);
-
-		if (bitmap == null)
+		if (!ASTCLoader.isSupported())
 			return null;
 
-		return FlxGraphic.fromBitmapData(bitmap, false, key);
+		return null;
 	}
 
 	inline static function toASTCPath(path:String):String
@@ -168,18 +128,7 @@ class Paths
 
 	static public function loadJSON(key:String, ?library:String):Dynamic
 	{
-		var rawJson:String = null;
-
-		#if mobile
-		var externalRelative = externalModsPath('data/$key.json', library);
-		if (externalRelative != null)
-			rawJson = StorageUtil.readString(externalRelative);
-		#end
-
-		if (rawJson == null)
-			rawJson = OpenFlAssets.getText(Paths.json(key, library));
-
-		rawJson = rawJson.trim();
+		var rawJson = OpenFlAssets.getText(Paths.json(key, library)).trim();
 
 		while (!rawJson.endsWith("}"))
 		{
@@ -197,6 +146,44 @@ class Paths
 
 			return null;
 		}
+	}
+
+	static public function loadSound(key:String, ?library:String):Sound
+	{
+		var path = sound(key, library);
+
+		if (soundCache.exists(path))
+			return soundCache.get(path);
+
+		if (!OpenFlAssets.exists(path, SOUND))
+		{
+			Debug.logWarn('Could not find sound at path $path');
+			return null;
+		}
+
+		var loadedSound = OpenFlAssets.getSound(path);
+		soundCache.set(path, loadedSound);
+
+		return loadedSound;
+	}
+
+	static public function loadMusic(key:String, ?library:String):Sound
+	{
+		var path = music(key, library);
+
+		if (soundCache.exists(path))
+			return soundCache.get(path);
+
+		if (!OpenFlAssets.exists(path, MUSIC))
+		{
+			Debug.logWarn('Could not find music at path $path');
+			return null;
+		}
+
+		var loadedSound = OpenFlAssets.getSound(path);
+		soundCache.set(path, loadedSound);
+
+		return loadedSound;
 	}
 
 	static public function getLibraryPath(file:String, library = "preload")
@@ -262,6 +249,11 @@ class Paths
 	inline static public function music(key:String, ?library:String)
 	{
 		return getPath('music/$key.$SOUND_EXT', MUSIC, library);
+	}
+
+	inline static public function video(key:String, ?library:String)
+	{
+		return getPath('videos/$key.$VIDEO_EXT', BINARY, library);
 	}
 
 	inline static public function voices(song:String)
@@ -333,6 +325,11 @@ class Paths
 		return OpenFlAssets.exists(path, AssetType.TEXT);
 	}
 
+	inline static public function doesImageAssetExist(path:String)
+	{
+		return OpenFlAssets.exists(path, AssetType.IMAGE);
+	}
+
 	inline static public function image(key:String, ?library:String)
 	{
 		return getPath('images/$key.png', IMAGE, library);
@@ -359,5 +356,48 @@ class Paths
 			return FlxAtlasFrames.fromSpriteSheetPacker(loadImage('characters/$key', library), file('images/characters/$key.txt', library));
 		}
 		return FlxAtlasFrames.fromSpriteSheetPacker(loadImage(key, library), file('images/$key.txt', library));
+	}
+
+	static public function clearStoredMemory(?excludeKeyList:Array<String>):Void
+	{
+		if (excludeKeyList == null)
+			excludeKeyList = [];
+
+		for (path in graphicCache.keys())
+		{
+			if (excludeKeyList.indexOf(path) != -1)
+				continue;
+
+			var graphic = graphicCache.get(path);
+
+			if (graphic != null)
+				graphic.destroy();
+
+			graphicCache.remove(path);
+		}
+
+		for (path in soundCache.keys())
+		{
+			if (excludeKeyList.indexOf(path) != -1)
+				continue;
+
+			soundCache.remove(path);
+		}
+	}
+
+	static public function clearUnusedGraphics():Void
+	{
+		for (path in graphicCache.keys())
+		{
+			var graphic = graphicCache.get(path);
+
+			if (graphic == null || graphic.useCount <= 0)
+			{
+				if (graphic != null)
+					graphic.destroy();
+
+				graphicCache.remove(path);
+			}
+		}
 	}
 }
