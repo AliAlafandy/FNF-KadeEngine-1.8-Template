@@ -1,0 +1,86 @@
+{
+  "dependencies": [
+    {
+      "name": "lime",
+      "type": "haxelib",
+      "version": "8.3.2"
+    },
+    {
+      "name": "openfl",
+      "type": "haxelib",
+      "version": "9.5.2"
+    },
+    {
+      "name": "flixel",
+      "type": "haxelib",
+      "version": "6.2.0"
+    },
+    {
+      "name": "flixel-tools",
+      "type": "haxelib",
+      "version": "1.5.1"
+    },
+    {
+      "name": "flixel-addons",
+      "type": "haxelib",
+      "version": "4.0.1"
+    },
+    {
+      "name": "flixel-ui",
+      "type": "haxelib",
+      "version": "2.6.4"
+    },
+    {
+      "name": "hscript",
+      "type": "haxelib",
+      "version": "2.7.0"
+    },
+    {
+      "name": "actuate",
+      "type": "haxelib",
+      "version": "1.8.1"
+    },
+    {
+      "name": "faxe",
+      "type": "git",
+      "dir": null,
+      "ref": "master",
+      "url": "https://github.com/uhrobots/faxe"
+    },
+    {
+      "name": "polymod",
+      "type": "git",
+      "dir": null,
+      "ref": "master",
+      "url": "https://github.com/EliteMasterEric/polymod.git"
+    },
+    {
+      "name": "discord_rpc",
+      "type": "git",
+      "dir": null,
+      "ref": "master",
+      "url": "https://github.com/Aidan63/linc_discord-rpc"
+    },
+    {
+      "name": "extension-webm",
+      "type": "git",
+      "dir": null,
+      "ref": "master",
+      "url": "https://github.com/KadeDev/extension-webm"
+    },
+    {
+      "name": "linc_luajit",
+      "type": "git",
+      "dir": null,
+      "ref": "master",
+      "url": "https://github.com/nebulazorua/linc_luajit.git"
+    },
+    {
+      "name": "hxvm-luajit",
+      "type": "git",
+      "dir": null,
+      "ref": "master",
+      "url": "https://github.com/nebulazorua/hxvm-luajit"
+    }
+  ]
+}
