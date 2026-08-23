@@ -3,6 +3,7 @@ package;
 #if FEATURE_STEPMANIA
 import smTools.SMFile;
 #end
+
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
@@ -28,7 +29,7 @@ import openfl.Assets;
 import flixel.input.keyboard.FlxKey;
 
 #if mobile
-import mobile.ui.Fullscreen;
+import mobile.ui.FullScreen;
 #end
 
 using StringTools;
