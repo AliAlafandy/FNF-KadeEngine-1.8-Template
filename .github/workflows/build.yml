@@ -37,25 +37,23 @@ jobs:
           submodules: recursive
 
       - name: Setup Haxe
-        uses: krdlab/setup-haxe@v1
+        uses: krdlab/setup-haxe@v2
         with:
           haxe-version: ${{ env.HAXE_VERSION }}
 
-      - name: Resolve haxelib path
+      - name: Install hmm
+        shell: bash
+        run: haxelib install hmm --quiet
+
+      - name: Install dependencies via hmm
+        shell: bash
+        run: haxelib run hmm install
+
+      - name: Setup Lime
         shell: bash
         run: |
-          HAXELIB_DIR="$HOME/haxelib"
-          mkdir -p "$HAXELIB_DIR"
-          haxelib setup "$HAXELIB_DIR"
-          echo "HAXELIB_ROOT=$HAXELIB_DIR" >> "$GITHUB_ENV"
-
-      - name: Cache haxelib
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.HAXELIB_ROOT }}
-          key: haxelib-${{ inputs.os }}-${{ env.HAXE_VERSION }}-${{ hashFiles('**/hmm.json') }}
-          restore-keys: |
-            haxelib-${{ inputs.os }}-${{ env.HAXE_VERSION }}-
+          haxelib run lime setup -alias -y
+          haxelib run lime setup flixel
 
       - name: Update APT
         if: inputs.name == 'Linux'
@@ -73,20 +71,6 @@ jobs:
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: '16.4'
-
-      - name: Install hmm
-        shell: bash
-        run: haxelib install hmm --quiet
-
-      - name: Install dependencies via hmm
-        shell: bash
-        run: haxelib run hmm install
-
-      - name: Setup Lime
-        shell: bash
-        run: |
-          haxelib run lime setup -alias -y
-          haxelib run lime setup flixel
 
       - name: Rebuild extension-webm
         if: inputs.name != 'Android x64' && inputs.name != 'Android x32' && inputs.name != 'iOS'
