@@ -4,12 +4,11 @@ import flixel.FlxG;
 import openfl.Lib;
 import openfl.events.Event;
 
-class Fullscreen
+class FullScreen
 {
 	public static var active:Bool = true;
 
 	static var baseWidth:Int;
-
 	static var baseHeight:Int;
 
 	static var initialized:Bool = false;
