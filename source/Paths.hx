@@ -5,13 +5,25 @@ import flixel.FlxG;
 import flixel.graphics.frames.FlxAtlasFrames;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
+import openfl.display.BitmapData;
 import haxe.Json;
+import mobile.backend.StorageUtil;
+
+#if ASTC_TEXTURES
+import mobile.backend.ASTCLoader;
+#end
 
 using StringTools;
 
 class Paths
 {
 	inline public static var SOUND_EXT = #if web "mp3" #else "ogg" #end;
+
+	#if ASTC_TEXTURES
+	inline public static var IMAGE_EXT = "astc";
+	#else
+	inline public static var IMAGE_EXT = "png";
+	#end
 
 	static var currentLevel:String;
 
@@ -39,15 +51,36 @@ class Paths
 		return getPreloadPath(file);
 	}
 
-	/**
-	 * For a given key and library for an image, returns the corresponding BitmapData.
-	 		* We can probably move the cache handling here.
-	 * @param key 
-	 * @param library 
-	 * @return BitmapData
-	 */
+	static function externalModsPath(relativePath:String, ?library:String):String
+	{
+		#if mobile
+		var candidate = 'mods/$relativePath';
+		if (StorageUtil.exists(candidate))
+			return candidate;
+
+		if (library != null)
+		{
+			candidate = 'mods/$library/$relativePath';
+			if (StorageUtil.exists(candidate))
+				return candidate;
+		}
+		#end
+
+		return null;
+	}
+
 	static public function loadImage(key:String, ?library:String):FlxGraphic
 	{
+		#if mobile
+		var externalRelative = externalModsPath('images/$key.png', library);
+		if (externalRelative != null)
+		{
+			var externalGraphic = loadExternalImage(externalRelative, key);
+			if (externalGraphic != null)
+				return externalGraphic;
+		}
+		#end
+
 		var path = image(key, library);
 
 		#if FEATURE_FILESYSTEM
@@ -56,10 +89,15 @@ class Paths
 			if (Caching.bitmapData.exists(key))
 			{
 				Debug.logTrace('Loading image from bitmap cache: $key');
-				// Get data from cache.
 				return Caching.bitmapData.get(key);
 			}
 		}
+		#end
+
+		#if ASTC_TEXTURES
+		var astcGraphic = loadASTCImage(path, key);
+		if (astcGraphic != null)
+			return astcGraphic;
 		#end
 
 		if (OpenFlAssets.exists(path, IMAGE))
@@ -74,11 +112,75 @@ class Paths
 		}
 	}
 
+	#if mobile
+	static function loadExternalImage(relativePath:String, key:String):FlxGraphic
+	{
+		var bytes = StorageUtil.readBytes(relativePath);
+
+		if (bytes == null)
+			return null;
+
+		try
+		{
+			var limeImage = lime.graphics.Image.fromBytes(bytes);
+			var bitmap = BitmapData.fromImage(limeImage);
+			return FlxGraphic.fromBitmapData(bitmap, false, key);
+		}
+		catch (e:Dynamic)
+		{
+			Debug.logWarn('Failed decoding external image: $relativePath');
+			return null;
+		}
+	}
+	#end
+
+	#if ASTC_TEXTURES
+	static function loadASTCImage(path:String, key:String):FlxGraphic
+	{
+		var astcPath = toASTCPath(path);
+
+		if (!OpenFlAssets.exists(astcPath, BINARY))
+			return null;
+
+		var bytes = OpenFlAssets.getBytes(astcPath);
+
+		if (bytes == null)
+			return null;
+
+		var bitmap = ASTCLoader.decode(bytes);
+
+		if (bitmap == null)
+			return null;
+
+		return FlxGraphic.fromBitmapData(bitmap, false, key);
+	}
+
+	inline static function toASTCPath(path:String):String
+	{
+		var dotIndex = path.lastIndexOf('.');
+
+		if (dotIndex == -1)
+			return path + '.astc';
+
+		return path.substr(0, dotIndex) + '.astc';
+	}
+	#end
+
 	static public function loadJSON(key:String, ?library:String):Dynamic
 	{
-		var rawJson = OpenFlAssets.getText(Paths.json(key, library)).trim();
+		var rawJson:String = null;
 
-		// Perform cleanup on files that have bad data at the end.
+		#if mobile
+		var externalRelative = externalModsPath('data/$key.json', library);
+		if (externalRelative != null)
+			rawJson = StorageUtil.readString(externalRelative);
+		#end
+
+		if (rawJson == null)
+			rawJson = OpenFlAssets.getText(Paths.json(key, library));
+
+		rawJson = rawJson.trim();
+
 		while (!rawJson.endsWith("}"))
 		{
 			rawJson = rawJson.substr(0, rawJson.length - 1);
@@ -86,7 +188,6 @@ class Paths
 
 		try
 		{
-			// Attempt to parse and return the JSON data.
 			return Json.parse(rawJson);
 		}
 		catch (e)
@@ -94,7 +195,6 @@ class Paths
 			Debug.logError("AN ERROR OCCURRED parsing a JSON file.");
 			Debug.logError(e.message);
 
-			// Return null.
 			return null;
 		}
 	}
@@ -124,10 +224,10 @@ class Paths
 		return Main.path + getPath('data/$key.lua', TEXT, library);
 	}
 
-	inline static public function luaAsset(key:String,?library:String)
+	inline static public function luaAsset(key:String, ?library:String)
 	{
 		return getPath('data/$key.lua', TEXT, library);
-	}	
+	}
 
 	inline static public function luaImage(key:String, ?library:String)
 	{
@@ -177,7 +277,6 @@ class Paths
 				songLowercase = 'milf';
 		}
 		var result = 'songs:assets/songs/${songLowercase}/Voices.$SOUND_EXT';
-		// Return null if the file does not exist.
 		return doesSoundAssetExist(result) ? result : null;
 	}
 
@@ -198,15 +297,12 @@ class Paths
 
 	static public function listSongsToCache()
 	{
-		// We need to query OpenFlAssets, not the file system, because of Polymod.
 		var soundAssets = OpenFlAssets.list(AssetType.MUSIC).concat(OpenFlAssets.list(AssetType.SOUND));
 
-		// TODO: Maybe rework this to pull from a text file rather than scan the list of assets.
 		var songNames = [];
 
 		for (sound in soundAssets)
 		{
-			// Parse end-to-beginning to support mods.
 			var path = sound.split('/');
 			path.reverse();
 
@@ -216,7 +312,6 @@ class Paths
 			if (path[2] != 'songs')
 				continue;
 
-			// Remove duplicates.
 			if (songNames.indexOf(songName) != -1)
 				continue;
 
@@ -257,9 +352,6 @@ class Paths
 		return FlxAtlasFrames.fromSparrow(loadImage(key, library), file('images/$key.xml', library));
 	}
 
-	/**
-	 * Senpai in Thorns uses this instead of Sparrow and IDK why.
-	 */
 	inline static public function getPackerAtlas(key:String, ?library:String, ?isCharacter:Bool = false)
 	{
 		if (isCharacter)
