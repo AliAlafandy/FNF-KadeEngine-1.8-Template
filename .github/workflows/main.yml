@@ -1,12 +1,29 @@
 name: Main
-on: workflow_dispatch
 
-# permissions: write-all
+on:
+  workflow_dispatch:
+    inputs:
+      buildAndroid:
+        description: 'Build Android targets'
+        type: boolean
+        default: true
+      buildIOS:
+        description: 'Build iOS target'
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   Build:
     name: ${{ matrix.name }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - name: Windows x64
@@ -20,7 +37,7 @@ jobs:
             artifactName: Windows x32
             artifactPath: export\32bit\windows\bin\*
           - name: Linux
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             buildArgs: linux
             artifactName: Linux
             artifactPath: export/release/linux/bin/*
@@ -30,10 +47,25 @@ jobs:
             artifactName: MacOS
             artifactPath: export/release/macos/bin/*
           - name: Html5
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             buildArgs: html5
             artifactName: HTML5
             artifactPath: export/release/html5/bin/*
+    uses: ./.github/workflows/build.yml
+    with:
+      name: ${{ matrix.name }}
+      os: ${{ matrix.os }}
+      buildArgs: ${{ matrix.buildArgs }}
+      artifactName: ${{ matrix.artifactName }}
+      artifactPath: ${{ matrix.artifactPath }}
+
+  BuildAndroid:
+    name: ${{ matrix.name }}
+    if: ${{ inputs.buildAndroid }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
           - name: Android x64
             os: macos-15
             buildArgs: "android -ONLY_ARM64"
@@ -44,15 +76,21 @@ jobs:
             buildArgs: "android -ONLY_ARMV7"
             artifactName: Android x32
             artifactPath: "export/release/android/bin/app/build/outputs/apk/release/*.apk"
-          - name: iOS
-            os: macos-15
-            buildArgs: "ios -nosign"
-            artifactName: IOS
-            artifactPath: "export/release/ios/build/Release-iphoneos/*.ipa"
     uses: ./.github/workflows/build.yml
     with:
-        name: ${{ matrix.name }}
-        os: ${{ matrix.os }}
-        buildArgs: ${{ matrix.buildArgs }}
-        artifactName: ${{ matrix.artifactName }}
-        artifactPath: ${{ matrix.artifactPath }}
+      name: ${{ matrix.name }}
+      os: ${{ matrix.os }}
+      buildArgs: ${{ matrix.buildArgs }}
+      artifactName: ${{ matrix.artifactName }}
+      artifactPath: ${{ matrix.artifactPath }}
+
+  BuildIOS:
+    name: iOS
+    if: ${{ inputs.buildIOS }}
+    uses: ./.github/workflows/build.yml
+    with:
+      name: iOS
+      os: macos-15
+      buildArgs: "ios -nosign"
+      artifactName: IOS
+      artifactPath: "export/release/ios/build/Release-iphoneos/*.ipa"
