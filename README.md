@@ -1,11 +1,13 @@
 
-![Kade Engine logo](assets/preload/images/KadeEngineLogo.png)
+![special](art/readme/special.png)
 
-[![AppVeyor](https://img.shields.io/appveyor/build/KadeDev/Kade-Engine-Windows?label=windows%20build)](https://ci.appveyor.com/project/KadeDev/kade-engine-windows/branch/master/artifacts) [![AppVeyor](https://img.shields.io/appveyor/build/KadeDev/Kade-Engine-Macos?label=macOS%20build)](https://ci.appveyor.com/project/KadeDev/kade-engine-macos/branch/master/artifacts)  [![AppVeyor](https://img.shields.io/appveyor/build/KadeDev/Kade-Engine-Linux?label=linux%20build)](https://ci.appveyor.com/project/KadeDev/kade-engine-linux/branch/master/artifacts) [![AppVeyor](https://img.shields.io/appveyor/build/daniel11420/KadeEngineWeb?label=html5&20build)](https://ci.appveyor.com/project/daniel11420/KadeEngineWeb) [![Discord](https://img.shields.io/discord/808039740464300104?label=discord)](https://discord.gg/MG6GQFh52U) [![GitHub issues](https://img.shields.io/github/issues/KadeDev/Kade-Engine)](https://github.com/KadeDev/Kade-Engine/issues) [![GitHub pull requests](https://img.shields.io/github/issues-pr/KadeDev/Kade-Engine)](https://github.com/KadeDev/Kade-Engine/pulls) []() []()
+[![AppVeyor](https://img.shields.io/appveyor/build/KadeDev/Kade-Engine-Windows?label=windows%20build)](https://ci.appveyor.com/project/KadeDev/kade-engine-windows/branch/master/artifacts) [![AppVeyor](https://img.shields.io/appveyor/build/KadeDev/Kade-Engine-Macos?label=macOS%20build)](https://ci.appveyor.com/project/KadeDev/kade-engine-macos/branch/master/artifacts) [![AppVeyor](https://img.shields.io/appveyor/build/KadeDev/Kade-Engine-Linux?label=linux%20build)](https://ci.appveyor.com/project/KadeDev/kade-engine-linux/branch/master/artifacts) [![AppVeyor](https://img.shields.io/appveyor/build/daniel11420/KadeEngineWeb?label=html5&20build)](https://ci.appveyor.com/project/daniel11420/KadeEngineWeb) [![AppVeyor](https://img.shields.io/appveyor/build/KadeDev/Kade-Engine-Android?label=android%20build)](https://ci.appveyor.com/project/KadeDev/kade-engine-android/branch/master/artifacts) [![AppVeyor](https://img.shields.io/appveyor/build/KadeDev/Kade-Engine-Ios?label=ios%20build)](https://ci.appveyor.com/project/KadeDev/kade-engine-ios/branch/master/artifacts) [![Discord](https://img.shields.io/discord/808039740464300104?label=discord)](https://discord.gg/MG6GQFh52U) [![GitHub issues](https://img.shields.io/github/issues/AliAlafandy/FNF-KadeEngine-1.8-Template)](https://github.com/AliAlafandy/FNF-KadeEngine-1.8-Template/issues) [![GitHub pull requests](https://img.shields.io/github/issues-pr/AliAlafandy/FNF-KadeEngine-1.8-Template)](https://github.com/AliAlafandy/FNF-KadeEngine-1.8-Template/pulls) []() []()
 
-![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/KadeDev/Kade-Engine/latest) ![GitHub repo size](https://img.shields.io/github/repo-size/KadeDev/Kade-Engine) ![Lines of code](https://img.shields.io/tokei/lines/github/KadeDev/Kade-Engine) ![Supported platforms](https://img.shields.io/badge/supported%20platforms-windows%2C%20macOS%2C%20linux%2C%20html5-blue) ![GitHub all releases](https://img.shields.io/github/downloads/KadeDev/Kade-Engine/total) ![GitHub](https://img.shields.io/github/license/KadeDev/Kade-Engine) ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/KadeDev/Kade-Engine?include_prereleases&label=latest%20version) 
+![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/AliAlafandy/FNF-KadeEngine-1.8-Template/latest) ![GitHub repo size](https://img.shields.io/github/repo-size/AliAlafandy/FNF-KadeEngine-1.8-Template) ![Lines of code](https://img.shields.io/tokei/lines/github/AliAlafandy/FNF-KadeEngine-1.8-Template) ![Supported platforms](https://img.shields.io/badge/supported%20platforms-windows%2C%20linux%2C%20macOS%2C%20html5%2C%20android%2C%20ios-blue) ![GitHub all releases](https://img.shields.io/github/downloads/AliAlafandy/FNF-KadeEngine-1.8-Template/total) ![GitHub](https://img.shields.io/github/license/AliAlafandy/FNF-KadeEngine-1.8-Template) ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/AliAlafandy/FNF-KadeEngine-1.8-Template?include_prereleases&label=latest%20version) 
 
-# Friday Night Funkin': Kade Engine
+# Friday Night Funkin': Kade Engine v1.8 Template
+
+This Template for Making any Mods you want, with Mobile Support.
 
 ### If you want to contribute to Kade Engine, read [this](https://github.com/KadeDev/Kade-Engine/blob/stable/CONTRIBUTING.md) first.
 ### If you want to build Kade Engine, read [this](https://github.com/KadeDev/Kade-Engine/blob/stable/docs/building.md).
@@ -74,7 +76,9 @@ This game was made with love to Newgrounds and its community. Extra love to Tom 
 - [KadeDeveloper](https://twitter.com/KadeDeveloper) - Maintainer and lead programmer
 - [The contributors](https://github.com/KadeDev/Kade-Engine/graphs/contributors)
 
-
+### Templators
+- [Ali Alafandy](https://youtube.com/@alialafandy) - Maintainer template
+- [Brenninho840](https://youtube.com/@RBrenninho8840) - Secondtainer template
 
 ### Shoutouts
 - [GWebDev](https://github.com/GrowtopiaFli) - Video Code
