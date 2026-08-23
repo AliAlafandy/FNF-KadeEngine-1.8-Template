@@ -27,6 +27,10 @@ import lime.app.Application;
 import openfl.Assets;
 import flixel.input.keyboard.FlxKey;
 
+#if mobile
+import mobile.ui.Fullscreen;
+#end
+
 using StringTools;
 
 class TitleState extends MusicBeatState
@@ -42,6 +46,10 @@ class TitleState extends MusicBeatState
 	var curWacky:Array<String> = [];
 
 	var wackyImage:FlxSprite;
+
+	#if mobile
+	var tapHint:FlxText;
+	#end
 
 	override public function create():Void
 	{
@@ -63,7 +71,6 @@ class TitleState extends MusicBeatState
 		KadeEngineData.initSave();
 
 		KeyBinds.keyCheck();
-		// It doesn't reupdate the list before u restart rn lmao
 
 		NoteskinHelpers.updateNoteskins();
 
@@ -89,10 +96,6 @@ class TitleState extends MusicBeatState
 		Highscore.load();
 
 		curWacky = FlxG.random.getObject(getIntroTextShit());
-
-		trace('hello');
-
-		// DEBUG BULLSHIT
 
 		super.create();
 
@@ -124,9 +127,6 @@ class TitleState extends MusicBeatState
 		persistentUpdate = true;
 
 		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-		// bg.antialiasing = FlxG.save.data.antialiasing;
-		// bg.setGraphicSize(Std.int(bg.width * 0.6));
-		// bg.updateHitbox();
 		add(bg);
 
 		if (Main.watermarks)
@@ -142,8 +142,6 @@ class TitleState extends MusicBeatState
 		logoBl.antialiasing = FlxG.save.data.antialiasing;
 		logoBl.animation.addByPrefix('bump', 'logo bumpin', 24, false);
 		logoBl.updateHitbox();
-		// logoBl.screenCenter();
-		// logoBl.color = FlxColor.BLACK;
 
 		gfDance = new FlxSprite(FlxG.width * 0.4, FlxG.height * 0.07);
 		gfDance.frames = Paths.getSparrowAtlas('gfDanceTitle');
@@ -160,16 +158,24 @@ class TitleState extends MusicBeatState
 		titleText.antialiasing = FlxG.save.data.antialiasing;
 		titleText.animation.play('idle');
 		titleText.updateHitbox();
-		// titleText.screenCenter(X);
 		add(titleText);
+
+		#if mobile
+		titleText.visible = false;
+
+		tapHint = new FlxText(0, FlxG.height * 0.8, FlxG.width, "Tap to Begin");
+		tapHint.setFormat(null, 32, FlxColor.WHITE, CENTER);
+		tapHint.borderStyle = OUTLINE;
+		tapHint.borderColor = FlxColor.BLACK;
+		tapHint.borderSize = 2;
+		add(tapHint);
+
+		FlxTween.tween(tapHint, {alpha: 0.4}, 0.6, {ease: FlxEase.quadInOut, type: PINGPONG});
+		#end
 
 		var logo:FlxSprite = new FlxSprite().loadGraphic(Paths.loadImage('logo'));
 		logo.screenCenter();
 		logo.antialiasing = FlxG.save.data.antialiasing;
-		// add(logo);
-
-		// FlxTween.tween(logoBl, {y: logoBl.y + 50}, 0.6, {ease: FlxEase.quadInOut, type: PINGPONG});
-		// FlxTween.tween(logo, {y: logoBl.y + 50}, 0.6, {ease: FlxEase.quadInOut, type: PINGPONG, startDelay: 0.1});
 
 		credGroup = new FlxGroup();
 		add(credGroup);
@@ -180,8 +186,6 @@ class TitleState extends MusicBeatState
 
 		credTextShit = new Alphabet(0, 0, "ninjamuffin99\nPhantomArcade\nkawaisprite\nevilsk8er", true);
 		credTextShit.screenCenter();
-
-		// credTextShit.alignment = CENTER;
 
 		credTextShit.visible = false;
 
@@ -213,22 +217,12 @@ class TitleState extends MusicBeatState
 			transIn = FlxTransitionableState.defaultTransIn;
 			transOut = FlxTransitionableState.defaultTransOut;
 
-			// HAD TO MODIFY SOME BACKEND SHIT
-			// IF THIS PR IS HERE IF ITS ACCEPTED UR GOOD TO GO
-			// https://github.com/HaxeFlixel/flixel-addons/pull/348
-
-			// var music:FlxSound = new FlxSound();
-			// music.loadStream(Paths.music('freakyMenu'));
-			// FlxG.sound.list.add(music);
-			// music.play();
 			FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 
 			FlxG.sound.music.fadeIn(4, 0, 0.7);
 			Conductor.changeBPM(102);
 			initialized = true;
 		}
-
-		// credGroup.add(credTextShit);
 	}
 
 	function getIntroTextShit():Array<Array<String>>
@@ -262,13 +256,8 @@ class TitleState extends MusicBeatState
 		var pressedEnter:Bool = controls.ACCEPT;
 
 		#if mobile
-		for (touch in FlxG.touches.list)
-		{
-			if (touch.justPressed)
-			{
-				pressedEnter = true;
-			}
-		}
+		if (checkMobileTap())
+			pressedEnter = true;
 		#end
 
 		if (pressedEnter && !transitioning && skippedIntro)
@@ -276,19 +265,21 @@ class TitleState extends MusicBeatState
 			if (FlxG.save.data.flashing)
 				titleText.animation.play('press');
 
+			#if mobile
+			if (tapHint != null)
+				FlxTween.cancelTweensOf(tapHint);
+			#end
+
 			FlxG.camera.flash(FlxColor.WHITE, 1);
 			FlxG.sound.play(Paths.sound('confirmMenu'), 0.7);
 
 			transitioning = true;
-			// FlxG.sound.music.stop();
 
 			MainMenuState.firstStart = true;
 			MainMenuState.finishedFunnyMove = false;
 
 			new FlxTimer().start(2, function(tmr:FlxTimer)
 			{
-				// Get current version of Kade Engine
-
 				var http = new haxe.Http("https://raw.githubusercontent.com/AliAlafandy/FNF-KadeEngine-1.8-Template/main/version.downloadMe");
 				var returnedData:Array<String> = [];
 
@@ -298,7 +289,7 @@ class TitleState extends MusicBeatState
 					returnedData[1] = data.substring(data.indexOf('-'), data.length);
 					if (!MainMenuState.kadeEngineVer.contains(returnedData[0].trim()) && !OutdatedSubState.leftState)
 					{
-						trace('outdated lmao! ' + returnedData[0] + ' != ' + MainMenuState.kadeEngineVer);
+						Debug.logInfo('Outdated build: ' + returnedData[0] + ' != ' + MainMenuState.kadeEngineVer);
 						OutdatedSubState.needVer = returnedData[0];
 						OutdatedSubState.currChanges = returnedData[1];
 						FlxG.switchState(new OutdatedSubState());
@@ -313,14 +304,13 @@ class TitleState extends MusicBeatState
 
 				http.onError = function(error)
 				{
-					trace('error: $error');
-					FlxG.switchState(new MainMenuState()); // fail but we go anyway
+					Debug.logWarn('Version check failed: $error');
+					FlxG.switchState(new MainMenuState());
 					clean();
 				}
 
 				http.request();
 			});
-			// FlxG.sound.play(Paths.music('titleShoot'), 0.7);
 		}
 
 		if (pressedEnter && !skippedIntro && initialized)
@@ -330,6 +320,23 @@ class TitleState extends MusicBeatState
 
 		super.update(elapsed);
 	}
+
+	#if mobile
+	function checkMobileTap():Bool
+	{
+		for (touch in FlxG.touches.list)
+		{
+			if (touch.justPressed)
+				return true;
+		}
+
+		return false;
+	}
+
+	public function onMobileBack():Void
+	{
+	}
+	#end
 
 	function createCoolText(textArray:Array<String>)
 	{
@@ -379,16 +386,10 @@ class TitleState extends MusicBeatState
 				deleteCoolText();
 			case 1:
 				createCoolText(['ninjamuffin99', 'phantomArcade', 'kawaisprite', 'evilsk8er']);
-			// credTextShit.visible = true;
 			case 3:
 				addMoreText('present');
-			// credTextShit.text += '\npresent...';
-			// credTextShit.addText();
 			case 4:
 				deleteCoolText();
-			// credTextShit.visible = false;
-			// credTextShit.text = 'In association \nwith';
-			// credTextShit.screenCenter();
 			case 5:
 				if (Main.watermarks)
 					createCoolText(['Kade Engine', 'by']);
@@ -402,34 +403,21 @@ class TitleState extends MusicBeatState
 					addMoreText('Newgrounds');
 					ngSpr.visible = true;
 				}
-			// credTextShit.text += '\nNewgrounds';
 			case 8:
 				deleteCoolText();
 				ngSpr.visible = false;
-			// credTextShit.visible = false;
-
-			// credTextShit.text = 'Shoutouts Tom Fulp';
-			// credTextShit.screenCenter();
 			case 9:
 				createCoolText([curWacky[0]]);
-			// credTextShit.visible = true;
 			case 11:
 				addMoreText(curWacky[1]);
-			// credTextShit.text += '\nlmao';
 			case 12:
 				deleteCoolText();
-			// credTextShit.visible = false;
-			// credTextShit.text = "Friday";
-			// credTextShit.screenCenter();
 			case 13:
 				addMoreText('Friday');
-			// credTextShit.visible = true;
 			case 14:
 				addMoreText('Night');
-			// credTextShit.text += '\nNight';
 			case 15:
-				addMoreText('Funkin'); // credTextShit.text += '\nFunkin';
-
+				addMoreText('Funkin');
 			case 16:
 				skipIntro();
 		}
@@ -460,9 +448,7 @@ class TitleState extends MusicBeatState
 					FlxTween.angle(logoBl, logoBl.angle, -4, 4, {ease: FlxEase.quartInOut});
 			}, 0);
 
-			// It always bugged me that it didn't do this before.
-			// Skip ahead in the song to the drop.
-			FlxG.sound.music.time = 9400; // 9.4 seconds
+			FlxG.sound.music.time = 9400;
 
 			skippedIntro = true;
 		}
