@@ -21,6 +21,7 @@ import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import lime.system.System;
 import mobile.backend.StorageUtil;
+import mobile.ui.Fullscreen;
 
 class Main extends Sprite
 {
@@ -116,6 +117,10 @@ class Main extends Sprite
 
 		addChild(fpsCounter);
 		toggleFPS(FlxG.save.data.fps);
+
+		#if mobile
+		Fullscreen.init(gameWidth, gameHeight);
+		#end
 
 		Debug.onGameStart();
 	}
