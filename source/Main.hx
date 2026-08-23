@@ -2,9 +2,11 @@ package;
 
 import openfl.display.Bitmap;
 import lime.app.Application;
+
 #if FEATURE_DISCORD
 import Discord.DiscordClient;
 #end
+
 import openfl.display.BlendMode;
 import openfl.text.TextFormat;
 import flixel.util.FlxColor;
@@ -20,8 +22,11 @@ import openfl.display.StageScaleMode;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import lime.system.System;
+
+#if mobile
 import mobile.backend.StorageUtil;
-import mobile.ui.Fullscreen;
+import mobile.ui.FullScreen;
+#end
 
 class Main extends Sprite
 {
@@ -119,7 +124,7 @@ class Main extends Sprite
 		toggleFPS(FlxG.save.data.fps);
 
 		#if mobile
-		Fullscreen.init(gameWidth, gameHeight);
+		FullScreen.init(gameWidth, gameHeight);
 		#end
 
 		Debug.onGameStart();
