@@ -3,14 +3,9 @@ package;
 import flixel.graphics.FlxGraphic;
 import flixel.FlxG;
 import flixel.graphics.frames.FlxAtlasFrames;
-import openfl.media.Sound;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
 import haxe.Json;
-
-#if ASTC_TEXTURES
-import mobile.backend.ASTCLoader;
-#end
 
 using StringTools;
 
@@ -18,13 +13,7 @@ class Paths
 {
 	inline public static var SOUND_EXT = #if web "mp3" #else "ogg" #end;
 
-	inline public static var VIDEO_EXT = "webm";
-
 	static var currentLevel:String;
-
-	static var graphicCache:Map<String, FlxGraphic> = new Map();
-
-	static var soundCache:Map<String, Sound> = new Map();
 
 	static public function setCurrentLevel(name:String)
 	{
@@ -50,86 +39,46 @@ class Paths
 		return getPreloadPath(file);
 	}
 
+	/**
+	 * For a given key and library for an image, returns the corresponding BitmapData.
+	 		* We can probably move the cache handling here.
+	 * @param key 
+	 * @param library 
+	 * @return BitmapData
+	 */
 	static public function loadImage(key:String, ?library:String):FlxGraphic
 	{
 		var path = image(key, library);
 
-		if (graphicCache.exists(path))
-		{
-			var cached = graphicCache.get(path);
-
-			if (cached != null && cached.bitmap != null)
-				return cached;
-
-			graphicCache.remove(path);
-		}
-
 		#if FEATURE_FILESYSTEM
-		if (Caching.bitmapData != null && Caching.bitmapData.exists(key))
+		if (Caching.bitmapData != null)
 		{
-			var cached = Caching.bitmapData.get(key);
-			graphicCache.set(path, cached);
-			return cached;
+			if (Caching.bitmapData.exists(key))
+			{
+				Debug.logTrace('Loading image from bitmap cache: $key');
+				// Get data from cache.
+				return Caching.bitmapData.get(key);
+			}
 		}
 		#end
 
-		#if ASTC_TEXTURES
-		var astcGraphic = tryLoadASTC(path, key);
-		if (astcGraphic != null)
+		if (OpenFlAssets.exists(path, IMAGE))
 		{
-			graphicCache.set(path, astcGraphic);
-			return astcGraphic;
+			var bitmap = OpenFlAssets.getBitmapData(path);
+			return FlxGraphic.fromBitmapData(bitmap);
 		}
-		#end
-
-		if (!OpenFlAssets.exists(path, IMAGE))
+		else
 		{
 			Debug.logWarn('Could not find image at path $path');
 			return null;
 		}
-
-		var bitmap = OpenFlAssets.getBitmapData(path);
-		var graphic = FlxGraphic.fromBitmapData(bitmap, false, key);
-
-		graphicCache.set(path, graphic);
-
-		return graphic;
 	}
-
-	#if ASTC_TEXTURES
-	static function tryLoadASTC(path:String, key:String):FlxGraphic
-	{
-		var astcPath = toASTCPath(path);
-
-		if (!OpenFlAssets.exists(astcPath, BINARY))
-			return null;
-
-		var bytes = OpenFlAssets.getBytes(astcPath);
-
-		if (bytes == null)
-			return null;
-
-		if (!ASTCLoader.isSupported())
-			return null;
-
-		return null;
-	}
-
-	inline static function toASTCPath(path:String):String
-	{
-		var dotIndex = path.lastIndexOf('.');
-
-		if (dotIndex == -1)
-			return path + '.astc';
-
-		return path.substr(0, dotIndex) + '.astc';
-	}
-	#end
 
 	static public function loadJSON(key:String, ?library:String):Dynamic
 	{
 		var rawJson = OpenFlAssets.getText(Paths.json(key, library)).trim();
 
+		// Perform cleanup on files that have bad data at the end.
 		while (!rawJson.endsWith("}"))
 		{
 			rawJson = rawJson.substr(0, rawJson.length - 1);
@@ -137,6 +86,7 @@ class Paths
 
 		try
 		{
+			// Attempt to parse and return the JSON data.
 			return Json.parse(rawJson);
 		}
 		catch (e)
@@ -144,46 +94,9 @@ class Paths
 			Debug.logError("AN ERROR OCCURRED parsing a JSON file.");
 			Debug.logError(e.message);
 
+			// Return null.
 			return null;
 		}
-	}
-
-	static public function loadSound(key:String, ?library:String):Sound
-	{
-		var path = sound(key, library);
-
-		if (soundCache.exists(path))
-			return soundCache.get(path);
-
-		if (!OpenFlAssets.exists(path, SOUND))
-		{
-			Debug.logWarn('Could not find sound at path $path');
-			return null;
-		}
-
-		var loadedSound = OpenFlAssets.getSound(path);
-		soundCache.set(path, loadedSound);
-
-		return loadedSound;
-	}
-
-	static public function loadMusic(key:String, ?library:String):Sound
-	{
-		var path = music(key, library);
-
-		if (soundCache.exists(path))
-			return soundCache.get(path);
-
-		if (!OpenFlAssets.exists(path, MUSIC))
-		{
-			Debug.logWarn('Could not find music at path $path');
-			return null;
-		}
-
-		var loadedSound = OpenFlAssets.getSound(path);
-		soundCache.set(path, loadedSound);
-
-		return loadedSound;
 	}
 
 	static public function getLibraryPath(file:String, library = "preload")
@@ -211,10 +124,10 @@ class Paths
 		return Main.path + getPath('data/$key.lua', TEXT, library);
 	}
 
-	inline static public function luaAsset(key:String, ?library:String)
+	inline static public function luaAsset(key:String,?library:String)
 	{
 		return getPath('data/$key.lua', TEXT, library);
-	}
+	}	
 
 	inline static public function luaImage(key:String, ?library:String)
 	{
@@ -251,11 +164,6 @@ class Paths
 		return getPath('music/$key.$SOUND_EXT', MUSIC, library);
 	}
 
-	inline static public function video(key:String, ?library:String)
-	{
-		return getPath('videos/$key.$VIDEO_EXT', BINARY, library);
-	}
-
 	inline static public function voices(song:String)
 	{
 		var songLowercase = StringTools.replace(song, " ", "-").toLowerCase();
@@ -269,6 +177,7 @@ class Paths
 				songLowercase = 'milf';
 		}
 		var result = 'songs:assets/songs/${songLowercase}/Voices.$SOUND_EXT';
+		// Return null if the file does not exist.
 		return doesSoundAssetExist(result) ? result : null;
 	}
 
@@ -289,12 +198,15 @@ class Paths
 
 	static public function listSongsToCache()
 	{
+		// We need to query OpenFlAssets, not the file system, because of Polymod.
 		var soundAssets = OpenFlAssets.list(AssetType.MUSIC).concat(OpenFlAssets.list(AssetType.SOUND));
 
+		// TODO: Maybe rework this to pull from a text file rather than scan the list of assets.
 		var songNames = [];
 
 		for (sound in soundAssets)
 		{
+			// Parse end-to-beginning to support mods.
 			var path = sound.split('/');
 			path.reverse();
 
@@ -304,6 +216,7 @@ class Paths
 			if (path[2] != 'songs')
 				continue;
 
+			// Remove duplicates.
 			if (songNames.indexOf(songName) != -1)
 				continue;
 
@@ -325,11 +238,6 @@ class Paths
 		return OpenFlAssets.exists(path, AssetType.TEXT);
 	}
 
-	inline static public function doesImageAssetExist(path:String)
-	{
-		return OpenFlAssets.exists(path, AssetType.IMAGE);
-	}
-
 	inline static public function image(key:String, ?library:String)
 	{
 		return getPath('images/$key.png', IMAGE, library);
@@ -349,6 +257,9 @@ class Paths
 		return FlxAtlasFrames.fromSparrow(loadImage(key, library), file('images/$key.xml', library));
 	}
 
+	/**
+	 * Senpai in Thorns uses this instead of Sparrow and IDK why.
+	 */
 	inline static public function getPackerAtlas(key:String, ?library:String, ?isCharacter:Bool = false)
 	{
 		if (isCharacter)
@@ -356,48 +267,5 @@ class Paths
 			return FlxAtlasFrames.fromSpriteSheetPacker(loadImage('characters/$key', library), file('images/characters/$key.txt', library));
 		}
 		return FlxAtlasFrames.fromSpriteSheetPacker(loadImage(key, library), file('images/$key.txt', library));
-	}
-
-	static public function clearStoredMemory(?excludeKeyList:Array<String>):Void
-	{
-		if (excludeKeyList == null)
-			excludeKeyList = [];
-
-		for (path in graphicCache.keys())
-		{
-			if (excludeKeyList.indexOf(path) != -1)
-				continue;
-
-			var graphic = graphicCache.get(path);
-
-			if (graphic != null)
-				graphic.destroy();
-
-			graphicCache.remove(path);
-		}
-
-		for (path in soundCache.keys())
-		{
-			if (excludeKeyList.indexOf(path) != -1)
-				continue;
-
-			soundCache.remove(path);
-		}
-	}
-
-	static public function clearUnusedGraphics():Void
-	{
-		for (path in graphicCache.keys())
-		{
-			var graphic = graphicCache.get(path);
-
-			if (graphic == null || graphic.useCount <= 0)
-			{
-				if (graphic != null)
-					graphic.destroy();
-
-				graphicCache.remove(path);
-			}
-		}
 	}
 }
