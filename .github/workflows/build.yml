@@ -121,13 +121,18 @@ jobs:
           echo "BUILD_VERSION=${NEW_VERSION}" >> "$GITHUB_ENV"
 
       - name: Decode Android keystore
-        if: contains(inputs.name, 'Android') && secrets.androidKeystoreBase64 != ''
+        if: contains(inputs.name, 'Android')
+        env:
+          KEYSTORE_BASE64: ${{ secrets.androidKeystoreBase64 }}
+          KEYSTORE_ALIAS: ${{ secrets.androidKeyAlias }}
         shell: bash
         run: |
-          echo "${{ secrets.androidKeystoreBase64 }}" | base64 --decode > release.keystore
-          sed -i.bak "s/ANDROID_KEY_ALIAS_PLACEHOLDER/${{ secrets.androidKeyAlias }}/" Project.xml
-          rm -f Project.xml.bak
-          echo "HAS_KEYSTORE=true" >> "$GITHUB_ENV"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > release.keystore
+            sed -i.bak "s/ANDROID_KEY_ALIAS_PLACEHOLDER/$KEYSTORE_ALIAS/" Project.xml
+            rm -f Project.xml.bak
+            echo "HAS_KEYSTORE=true" >> "$GITHUB_ENV"
+          fi
 
       - name: Rebuild extension-webm
         if: "!contains(inputs.name, 'Android') && inputs.name != 'iOS'"
@@ -144,10 +149,12 @@ jobs:
           haxelib run lime config ANDROID_SETUP true
 
       - name: Compile
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.androidKeystorePassword }}
         shell: bash
         run: |
           if [ "$HAS_KEYSTORE" == "true" ]; then
-            haxelib run lime build ${{ inputs.buildArgs }} --certificate-password="${{ secrets.androidKeystorePassword }}"
+            haxelib run lime build ${{ inputs.buildArgs }} --certificate-password="$KEYSTORE_PASSWORD"
           else
             haxelib run lime build ${{ inputs.buildArgs }}
           fi
