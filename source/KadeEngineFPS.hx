@@ -6,7 +6,6 @@ import openfl.display.BitmapData;
 import flixel.FlxG;
 import haxe.Timer;
 import openfl.events.Event;
-import openfl.events.TouchEvent;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 #if gl_stats
@@ -17,16 +16,19 @@ import openfl.display._internal.stats.DrawCallContext;
 import openfl.Lib;
 #end
 
-#if mobile
-import mobile.ui.Fullscreen;
-#end
-
+/**
+	The FPS class provides an easy-to-use monitor to display
+	the current frame rate of an OpenFL project
+**/
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
 #end
 class KadeEngineFPS extends TextField
 {
+	/**
+		The current frame rate, expressed using frames-per-second
+	**/
 	public var currentFPS(default, null):Int;
 
 	public var bitmap:Bitmap;
@@ -35,46 +37,17 @@ class KadeEngineFPS extends TextField
 	@:noCompletion private var currentTime:Float;
 	@:noCompletion private var times:Array<Float>;
 
-	#if mobile
-	static inline var MOBILE_UPDATE_INTERVAL:Float = 250;
-
-	var timeSinceUpdate:Float = 0;
-
-	var tapZoneSize:Float = 96;
-
-	var baseX:Float;
-
-	var baseY:Float;
-	#end
-
 	public function new(x:Float = 10, y:Float = 10, color:Int = 0x000000)
 	{
 		super();
 
-		#if mobile
-		baseX = x;
-		baseY = y;
-
-		var scale:Float = getMobileScale();
-		var safeBounds = Fullscreen.getSafeBounds();
-		this.x = safeBounds.x + (x * scale);
-		this.y = safeBounds.y + (y * scale);
-		#else
 		this.x = x;
 		this.y = y;
-		#end
 
 		currentFPS = 0;
 		selectable = false;
 		mouseEnabled = false;
-
-		var fontSize:Int = 14;
-
-		#if mobile
-		fontSize = Math.round(fontSize * getMobileScale());
-		#end
-
-		defaultTextFormat = new TextFormat(openfl.utils.Assets.getFont("assets/fonts/vcr.ttf").fontName, fontSize, color);
+		defaultTextFormat = new TextFormat(openfl.utils.Assets.getFont("assets/fonts/vcr.ttf").fontName, 14, color);
 		text = "FPS: ";
 		width += 200;
 
@@ -91,57 +64,8 @@ class KadeEngineFPS extends TextField
 		#end
 
 		bitmap = ImageOutline.renderImage(this, 1, 0x000000, 1, true);
-		Main.instance.addChild(bitmap);
-
-		#if mobile
-		setupMobileToggle();
-		Lib.current.stage.addEventListener(Event.RESIZE, onMobileResize);
-		#end
+		(cast(Lib.current.getChildAt(0), Main)).addChild(bitmap);
 	}
-
-	#if mobile
-	function getMobileScale():Float
-	{
-		var baseHeight:Float = Fullscreen.getBaseHeight();
-
-		if (baseHeight <= 0)
-			baseHeight = 720;
-
-		var actualHeight:Float = Lib.current.stage.stageHeight;
-
-		if (actualHeight <= 0)
-			return 1;
-
-		var scale:Float = actualHeight / baseHeight;
-
-		return scale < 1 ? 1 : scale;
-	}
-
-	function onMobileResize(e:Event):Void
-	{
-		var scale:Float = getMobileScale();
-		var safeBounds = Fullscreen.getSafeBounds();
-
-		this.x = safeBounds.x + (baseX * scale);
-		this.y = safeBounds.y + (baseY * scale);
-	}
-
-	function setupMobileToggle():Void
-	{
-		Lib.current.stage.addEventListener(TouchEvent.TOUCH_TAP, onMobileTap);
-	}
-
-	function onMobileTap(e:TouchEvent):Void
-	{
-		var safeBounds = Fullscreen.getSafeBounds();
-
-		if (e.stageX <= safeBounds.x + tapZoneSize && e.stageY <= safeBounds.y + tapZoneSize)
-		{
-			FlxG.save.data.fps = !FlxG.save.data.fps;
-			FlxG.save.flush();
-		}
-	}
-	#end
 
 	var array:Array<FlxColor> = [
 		FlxColor.fromRGB(148, 0, 211),
@@ -157,25 +81,17 @@ class KadeEngineFPS extends TextField
 
 	public static var currentColor = 0;
 
+	// Event Handlers
 	@:noCompletion
 	private #if !flash override #end function __enterFrame(deltaTime:Float):Void
 	{
-		#if mobile
-		timeSinceUpdate += deltaTime;
-
-		if (timeSinceUpdate < MOBILE_UPDATE_INTERVAL)
-			return;
-
-		timeSinceUpdate = 0;
-		#end
-
 		if (MusicBeatState.initSave)
 			if (FlxG.save.data.fpsRain)
 			{
 				if (currentColor >= array.length)
 					currentColor = 0;
 				currentColor = Math.round(FlxMath.lerp(0, array.length, skippedFrames / (FlxG.save.data.fpsCap / 3)));
-				Main.instance.changeFPSColor(array[currentColor]);
+				(cast(Lib.current.getChildAt(0), Main)).changeFPSColor(array[currentColor]);
 				currentColor++;
 				skippedFrames++;
 				if (skippedFrames > (FlxG.save.data.fpsCap / 3))
@@ -193,7 +109,7 @@ class KadeEngineFPS extends TextField
 		var currentCount = times.length;
 		currentFPS = Math.round((currentCount + cacheCount) / 2);
 
-		if (currentCount != cacheCount)
+		if (currentCount != cacheCount /*&& visible*/)
 		{
 			text = (FlxG.save.data.fps ? "FPS: "
 				+ currentFPS
@@ -205,17 +121,17 @@ class KadeEngineFPS extends TextField
 			text += "\nstageDC: " + Context3DStats.contextDrawCalls(DrawCallContext.STAGE);
 			text += "\nstage3DDC: " + Context3DStats.contextDrawCalls(DrawCallContext.STAGE3D);
 			#end
-
-			visible = true;
-
-			Main.instance.removeChild(bitmap);
-
-			bitmap = ImageOutline.renderImage(this, 2, 0x000000, 1);
-
-			Main.instance.addChild(bitmap);
-
-			visible = false;
 		}
+
+		visible = true;
+
+		Main.instance.removeChild(bitmap);
+
+		bitmap = ImageOutline.renderImage(this, 2, 0x000000, 1);
+
+		Main.instance.addChild(bitmap);
+
+		visible = false;
 
 		cacheCount = currentCount;
 	}
