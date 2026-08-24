@@ -51,36 +51,8 @@
       "name": "polymod",
       "type": "git",
       "dir": null,
-      "ref": "47d9a2775e3fd8f6dd17d6f4b99b8798709da435",
-      "url": "https://github.com/larsiusprime/polymod"
-    },
-    {
-      "name": "thx.core",
-      "type": "git",
-      "dir": null,
-      "ref": "2bf2b992e06159510f595554e6b952e47922f128",
-      "url": "https://github.com/fponticelli/thx.core"
-    },
-    {
-      "name": "thx.semver",
-      "type": "git",
-      "dir": null,
-      "ref": "bdb191fe7cf745c02a980749906dbf22719e200b",
-      "url": "https://github.com/fponticelli/thx.semver"
-    },
-    {
-      "name": "jsonpath",
-      "type": "git",
-      "dir": null,
-      "ref": "7a24193717b36393458c15c0435bb7c4470ecdda",
-      "url": "https://github.com/EliteMasterEric/jsonpath"
-    },
-    {
-      "name": "jsonpatch",
-      "type": "git",
-      "dir": null,
-      "ref": "f9b83215acd586dc28754b4ae7f69d4c06c3b4d3",
-      "url": "https://github.com/EliteMasterEric/jsonpatch"
+      "ref": "master",
+      "url": "https://github.com/EliteMasterEric/polymod.git"
     },
     {
       "name": "discord_rpc",
