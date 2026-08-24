@@ -1,29 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
+	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="FNF: KadeEngine" file="KadeEngine" packageName="com.yourname.kadeengine" package="com.yourname.kadeengine" main="Main" version="0.2.7.1" company="YourName" if="mobile" />
-	<app title="Friday Night Funkin': Kade Engine" file="Kade Engine" packageName="com.yourname.kadeengine" package="com.yourname.kadeengine" main="Main" version="0.2.7.1" company="YourName" unless="mobile" />
+	<app title="Friday Night Funkin': Kade Engine" file="KadeEngine" packageName="com.yourname.kadeengine" package="com.yourname.kadeengine" main="Main" version="0.2.7.1" company="YourName" />
 
+	<!--Switch Export with Unique ApplicationID and Icon-->
 	<set name="APP_ID" value="0x0100f6c013bbc000" />
 
 	<haxedef name="LINC_LUA_RELATIVE_DYNAMIC_LIB"/>
 
+	<!--The flixel preloader is not accurate in Chrome. You can use it regularly if you embed the swf into a html file
+		or you can set the actual size of your file manually at "FlxPreloaderBase-onUpdate-bytesTotal"-->
+	<!-- <app preloader="Preloader" resizable="true" /> -->
 	<app preloader="flixel.system.FlxPreloader" />
 
+	<!--Minimum without FLX_NO_GAMEPAD: 11.8, without FLX_NO_NATIVE_CURSOR: 11.2-->
 	<set name="SWF_VERSION" value="11.8" />
 
-	<window width="1280" height="720" fps="60" background="#000000" hardware="true" vsync="false" />
+	<!-- ____________________________ Window Settings ___________________________ -->
 
+	<!--These window settings apply to all targets-->
+	<window width="1280" height="720" fps="" background="#000000" hardware="true" vsync="false" />
+
+	<!--HTML5-specific-->
 	<window if="html5" resizable="true" />
 
+	<!--Desktop-specific-->
 	<window if="desktop" orientation="landscape" fullscreen="false" resizable="true" vsync="false"/>
 
-	<window if="mobile" orientation="landscape" fullscreen="true" width="0" height="0" resizable="false" allow-shaders="true" depth-buffer="false" stencil-buffer="false" antialiasing="0"/>
+	<!--Mobile-specific-->
+	<window if="mobile" orientation="landscape" fullscreen="true" width="0" height="0" resizable="false"/>
+	
+	<define name="mobileC" if="mobile" />
+	<assets path="assets/shared/images/hitbox" if="mobile" />
 
-	<define name="mobileC" if="mobile"/>
-	<assets path="assets/shared/images/hitbox" if="mobile"/>
-
+	<!--Switch-specific-->
 	<window if="switch" orientation="landscape" fullscreen="true" width="0" height="0" resizable="true" />
+
+	<!-- _____________________________ Path Settings ____________________________ -->
 
 	<set name="BUILD_DIR" value="export/debug" if="debug" />
 	<set name="BUILD_DIR" value="export/release" unless="debug" />
@@ -31,21 +45,13 @@
 
 	<classpath name="source" />
 
-	<define name="ASTC_TEXTURES" if="mobile" unless="no-astc" />
-
-	<section if="ASTC_TEXTURES">
-		<assets path="assets/preload" rename="assets" include="*.astc" exclude="*.png"/>
-		<assets path="assets/preload" rename="assets" exclude="*.astc;*.ogg;*.mp3;*.png"/>
-	</section>
-
-	<section unless="ASTC_TEXTURES">
-		<assets path="assets/preload" rename="assets" exclude="*.astc;*.ogg" if="web"/>
-		<assets path="assets/preload" rename="assets" exclude="*.astc;*.mp3" unless="web"/>
-	</section>
-
+	<assets path="assets/preload" rename="assets" exclude="*.ogg" if="web"/>
+	<assets path="assets/preload" rename="assets" exclude="*.mp3" unless="web"/>
+	
+	<!-- <define name="PRELOAD_ALL" /> -->
 	<define name="PRELOAD_ALL" unless="web" />
 	<define name="NO_PRELOAD_ALL" unless="PRELOAD_ALL"/>
-
+	
 	<section if="PRELOAD_ALL">
 		<library name="songs" preload="true" />
 		<library name="shared" preload="true" />
@@ -58,7 +64,7 @@
 		<library name="week6" preload="true" />
 		<library name="sm" preload="true" />
 	</section>
-
+	
 	<section if="NO_PRELOAD_ALL">
 		<library name="songs" preload="false" />
 		<library name="shared" preload="false" />
@@ -71,112 +77,134 @@
 		<library name="week6" preload="false" />
 		<library name="sm" preload="false" />
 	</section>
+	
+	<assets path="assets/songs" library="songs" exclude="*.ogg" if="web"/>
+	<assets path="assets/songs" library="songs" exclude="*.mp3" unless="web"/>
+	<assets path="assets/shared" library="shared" exclude="*.ogg" if="web"/>
+	<assets path="assets/shared" library="shared" exclude="*.mp3" unless="web"/>
+	<assets path="assets/tutorial" library="tutorial" exclude="*.ogg" if="web"/>
+	<assets path="assets/tutorial" library="tutorial" exclude="*.mp3" unless="web"/>
+	<assets path="assets/week1" library="week1" exclude="*.ogg" if="web"/>
+	<assets path="assets/week1" library="week1" exclude="*.mp3" unless="web"/>
+	<assets path="assets/week2" library="week2" exclude="*.ogg" if="web"/>
+	<assets path="assets/week2" library="week2" exclude="*.mp3" unless="web"/>
+	<assets path="assets/week3" library="week3" exclude="*.ogg" if="web"/>
+	<assets path="assets/week3" library="week3" exclude="*.mp3" unless="web"/>
+	<assets path="assets/week4" library="week4" exclude="*.ogg" if="web"/>
+	<assets path="assets/week4" library="week4" exclude="*.mp3" unless="web"/>
+	<assets path="assets/week5" library="week5" exclude="*.ogg" if="web"/>
+	<assets path="assets/week5" library="week5" exclude="*.mp3" unless="web"/>
+	<assets path="assets/week6" library="week6" exclude="*.ogg" if="web"/>
+	<assets path="assets/week6" library="week6" exclude="*.mp3" unless="web"/>
+	<assets path="assets/sm" library="sm" exclude="*.ogg" if="web"/>
+	<assets path="assets/sm" library="sm" exclude="*.mp3" unless="web"/>
 
-	<section if="ASTC_TEXTURES">
-		<assets path="assets/songs" library="songs" include="*.astc" exclude="*.png"/>
-		<assets path="assets/songs" library="songs" exclude="*.astc;*.ogg;*.mp3;*.png"/>
-		<assets path="assets/shared" library="shared" include="*.astc" exclude="*.png"/>
-		<assets path="assets/shared" library="shared" exclude="*.astc;*.ogg;*.mp3;*.png"/>
-		<assets path="assets/tutorial" library="tutorial" include="*.astc" exclude="*.png"/>
-		<assets path="assets/tutorial" library="tutorial" exclude="*.astc;*.ogg;*.mp3;*.png"/>
-		<assets path="assets/week1" library="week1" include="*.astc" exclude="*.png"/>
-		<assets path="assets/week1" library="week1" exclude="*.astc;*.ogg;*.mp3;*.png"/>
-		<assets path="assets/week2" library="week2" include="*.astc" exclude="*.png"/>
-		<assets path="assets/week2" library="week2" exclude="*.astc;*.ogg;*.mp3;*.png"/>
-		<assets path="assets/week3" library="week3" include="*.astc" exclude="*.png"/>
-		<assets path="assets/week3" library="week3" exclude="*.astc;*.ogg;*.mp3;*.png"/>
-		<assets path="assets/week4" library="week4" include="*.astc" exclude="*.png"/>
-		<assets path="assets/week4" library="week4" exclude="*.astc;*.ogg;*.mp3;*.png"/>
-		<assets path="assets/week5" library="week5" include="*.astc" exclude="*.png"/>
-		<assets path="assets/week5" library="week5" exclude="*.astc;*.ogg;*.mp3;*.png"/>
-		<assets path="assets/week6" library="week6" include="*.astc" exclude="*.png"/>
-		<assets path="assets/week6" library="week6" exclude="*.astc;*.ogg;*.mp3;*.png"/>
-		<assets path="assets/sm" library="sm" include="*.astc" exclude="*.png"/>
-		<assets path="assets/sm" library="sm" exclude="*.astc;*.ogg;*.mp3;*.png"/>
-	</section>
+	<assets path="example_mods" rename="mods" embed="false"/>
+	<assets path="art/readme.txt" rename="do NOT readme.txt" />
+	<assets path="LICENSE" rename="LICENSE.txt" />
+	<!-- <template path='mods' /> -->
+	
+	<!-- <assets path="CHANGELOG.md" rename='changelog.txt'/> -->
 
-	<section unless="ASTC_TEXTURES">
-		<assets path="assets/songs" library="songs" exclude="*.astc;*.ogg" if="web"/>
-		<assets path="assets/songs" library="songs" exclude="*.astc;*.mp3" unless="web"/>
-		<assets path="assets/shared" library="shared" exclude="*.astc;*.ogg" if="web"/>
-		<assets path="assets/shared" library="shared" exclude="*.astc;*.mp3" unless="web"/>
-		<assets path="assets/tutorial" library="tutorial" exclude="*.astc;*.ogg" if="web"/>
-		<assets path="assets/tutorial" library="tutorial" exclude="*.astc;*.mp3" unless="web"/>
-		<assets path="assets/week1" library="week1" exclude="*.astc;*.ogg" if="web"/>
-		<assets path="assets/week1" library="week1" exclude="*.astc;*.mp3" unless="web"/>
-		<assets path="assets/week2" library="week2" exclude="*.astc;*.ogg" if="web"/>
-		<assets path="assets/week2" library="week2" exclude="*.astc;*.mp3" unless="web"/>
-		<assets path="assets/week3" library="week3" exclude="*.astc;*.ogg" if="web"/>
-		<assets path="assets/week3" library="week3" exclude="*.astc;*.mp3" unless="web"/>
-		<assets path="assets/week4" library="week4" exclude="*.astc;*.ogg" if="web"/>
-		<assets path="assets/week4" library="week4" exclude="*.astc;*.mp3" unless="web"/>
-		<assets path="assets/week5" library="week5" exclude="*.astc;*.ogg" if="web"/>
-		<assets path="assets/week5" library="week5" exclude="*.astc;*.mp3" unless="web"/>
-		<assets path="assets/week6" library="week6" exclude="*.astc;*.ogg" if="web"/>
-		<assets path="assets/week6" library="week6" exclude="*.astc;*.mp3" unless="web"/>
-		<assets path="assets/sm" library="sm" exclude="*.astc;*.ogg" if="web"/>
-		<assets path="assets/sm" library="sm" exclude="*.astc;*.mp3" unless="web"/>
-	</section>
-
-	<assets path='example_mods' rename='mods' embed='false'/>
-	<assets path='art/readme.txt' rename='do NOT readme.txt' />
-	<assets path='LICENSE' rename='LICENSE.txt' />
-
-	<assets path="assets/fonts" embed='true'/>
+	<!-- NOTE FOR FUTURE SELF SINCE FONTS ARE ALWAYS FUCKY 
+		TO FIX ONE OF THEM, I CONVERTED IT TO OTF. DUNNO IF YOU NEED TO
+		THEN UHHH I USED THE NAME OF THE FONT WITH SETFORMAT() ON THE TEXT!!!
+		NOT USING A DIRECT THING TO THE ASSET!!!
+	-->
+	<assets path="assets/fonts" embed="true"/>
+	<!-- _______________________________ Libraries ______________________________ -->
 
 	<haxelib name="flixel" />
-	<haxedev set='webgl' />
+	<haxedev set="webgl" />
 
+	<!--In case you want to use the addons package-->
 	<haxelib name="flixel-addons" />
 	<haxelib name="hscript" />
 
 	<haxelib name="actuate" />
-	<haxelib name="extension-webm" unless="mobile"/>
+	<haxelib name="extension-webm"/> <!-- Make sure to use https://github.com/KadeDev/extension-webm/ -->
 
+	<!--In case you want to use the ui package-->
 	<haxelib name="flixel-ui" />
-	<haxelib name="faxe" if='switch'/>
+	<haxelib name="faxe" if="switch"/>
 	<haxelib name="polymod"/>
 	<haxelib name="discord_rpc" if="desktop"/>
-	<haxelib name="linc_luajit" unless="mobile"/>
+	<haxelib name="linc_luajit"/>
 	<haxelib name="hxvm-luajit" if="desktop"/>
+	<!-- <haxelib name="hxcpp-debug-server" if="desktop"/> -->
 
-	<haxedef name="FLX_NO_MOUSE" if="mobile" />
-	<haxedef name="FLX_NO_KEYBOARD" if="mobile" />
-	<haxedef name="FLX_NO_TOUCH" if="desktop" />
+	<!-- <haxelib name="markdown" /> -->
+	<!-- <haxelib name="HtmlParser" /> -->
 
+	<!--In case you want to use nape with flixel-->
+	<!--<haxelib name="nape-haxe4" />-->
+
+	<!-- ______________________________ Haxedefines _____________________________ -->
+
+	<!--Enable the Flixel core recording system-->
+	<!--<haxedef name="FLX_RECORD" />-->
+
+	<!--Disable the right and middle mouse buttons-->
+	<!-- <haxedef name="FLX_NO_MOUSE_ADVANCED" /> -->
+
+	<!--Disable the native cursor API on Flash-->
+	<!--<haxedef name="FLX_NO_NATIVE_CURSOR" />-->
+
+	<!--Optimise inputs, be careful you will get null errors if you don't use conditionals in your game-->
+	<!-- <haxedef name="FLX_NO_MOUSE" if="mobile" /> -->
+	<!-- <haxedef name="FLX_NO_KEYBOARD" if="mobile" /> -->
+	<!-- <haxedef name="FLX_NO_TOUCH" if="desktop" /> -->
+	<!--<haxedef name="FLX_NO_GAMEPAD" />-->
+
+	<!--Disable the Flixel core sound tray-->
+	<!--<haxedef name="FLX_NO_SOUND_TRAY" />-->
+
+	<!--Disable the Flixel sound management code-->
+	<!--<haxedef name="FLX_NO_SOUND_SYSTEM" />-->
+
+	<!--Disable the Flixel core focus lost screen-->
 	<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />
 
+	<!--Disable the Flixel core debugger. Automatically gets set whenever you compile in release mode!-->
 	<haxedef name="FLX_NO_DEBUG" unless="debug" />
 
 	<haxedef name="HXCPP_GC_BIG_BLOCKS"/>
 
+	<!--Enable this for Nape release builds for a serious peformance improvement-->
 	<haxedef name="NAPE_RELEASE_BUILD" unless="debug" />
 
-	<icon path="art/icon8.png" size='8'/>
-	<icon path="art/icon16.png" size='16'/>
-	<icon path="art/icon32.png" size='32'/>
-	<icon path="art/icon64.png" size='64'/>
-	<icon path="art/icon128.png" size='128'/>
-	<icon path="art/icon256.png" size='256'/>
-	<icon path="art/icon512.png" size='512'/>
+	<!-- _________________________________ Custom _______________________________ -->
+
+	<!--Place custom nodes like icons here (higher priority to override the HaxeFlixel icon)-->
+	
+	<icon path="art/icon8.png" size="8"/>
+	<icon path="art/icon16.png" size="16"/>
+	<icon path="art/icon32.png" size="32"/>
+	<icon path="art/icon64.png" size="64"/>
+	<icon path="art/icon128.png" size="128"/>
+	<icon path="art/icon256.png" size="256"/>
+	<icon path="art/icon512.png" size="512"/>
 	<icon path="art/iconOG.png" />
 
 	<haxeflag name="--no-traces" unless="debug" />
 	<haxeflag name="--dce full" if="release" />
 
-	<haxedef name="FEATURE_DISCORD" if="desktop" />
-	<haxedef name="FEATURE_FILESYSTEM" if="desktop" />
-	<haxedef name="FEATURE_LUAMODCHART" unless="mobile"/>
-	<haxedef name="FEATURE_WEBM" unless="mobile"/>
-	<haxedef name="FEATURE_STEPMANIA"/>
-	<haxedef name="FEATURE_MULTITHREADING" if="cpp" />
-	<haxedef name="FEATURE_MODCORE" if="desktop" />
+  <!-- Use defines to ensure compile-time definitions have readable context. -->
+  <!-- Allowed inputs are mobile,desktop,web,ios,android,windows,mac,linux,switch,html5,cpp,neko,flash,js -->
 
-	<config:android android-install-location="auto" android-minimum-sdk-version="21" android-target-sdk-version="34" android-gradle-version="8.1.0" android-orientation="landscape"/>
-	<permission name="android.permission.WRITE_EXTERNAL_STORAGE" if="android"/>
-	<permission name="android.permission.READ_EXTERNAL_STORAGE" if="android"/>
-	<permission name="android.permission.INTERNET" if="android"/>
+  <!-- Defines whether the Discord client should be enabled. Only works on desktop. -->
+  <haxedef name="FEATURE_DISCORD" if="desktop" />
+  <!-- Defines whether the file system can be read/written directly. Does not work in browser. -->
+  <haxedef name="FEATURE_FILESYSTEM" if="desktop" />
+  <!-- Defines whether Lua Modcharts should be enabled. Only works on Windows. -->
+  <haxedef name="FEATURE_LUAMODCHART"/>
+  <!-- Defines whether WebM videos should be enabled. Currently only enabled on Windows. -->
+  <haxedef name="FEATURE_WEBM"/>
+  <!-- Defines whether StepMania files can be loaded. -->
+  <haxedef name="FEATURE_STEPMANIA"/>
+  <!-- Defines whether the Thread class can be used. -->
+  <haxedef name="FEATURE_MULTITHREADING" if="cpp" />
 
-	<certificate path="release.keystore" alias="ANDROID_KEY_ALIAS_PLACEHOLDER" if="android"/>
-
+  <!-- Defines whether the Mods menu will display before launching. -->
+  <haxedef name="FEATURE_MODCORE" if="desktop" />
 </project>
