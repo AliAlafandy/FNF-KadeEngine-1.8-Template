@@ -1,4 +1,4 @@
-name: Build
+Name: Build
 
 on:
   workflow_call:
@@ -85,14 +85,14 @@ jobs:
           xcode-version: '16.4'
 
       - name: Setup JDK
-        if: env.IS_ANDROID == 'true'
+        if: contains(inputs.name, 'Android')
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
       - name: Setup Android SDK
-        if: env.IS_ANDROID == 'true'
+        if: contains(inputs.name, 'Android')
         uses: android-actions/setup-android@v3
         with:
           packages: >-
@@ -103,7 +103,7 @@ jobs:
             cmdline-tools;latest
 
       - name: Cache Gradle
-        if: env.IS_ANDROID == 'true'
+        if: contains(inputs.name, 'Android')
         uses: actions/cache@v4
         with:
           path: |
@@ -123,7 +123,7 @@ jobs:
           echo "BUILD_VERSION=${NEW_VERSION}" >> "$GITHUB_ENV"
 
       - name: Decode Android keystore
-        if: env.IS_ANDROID == 'true' && secrets.androidKeystoreBase64 != ''
+        if: contains(inputs.name, 'Android') && secrets.androidKeystoreBase64 != ''
         shell: bash
         run: |
           echo "${{ secrets.androidKeystoreBase64 }}" | base64 --decode > release.keystore
@@ -132,12 +132,12 @@ jobs:
           echo "HAS_KEYSTORE=true" >> "$GITHUB_ENV"
 
       - name: Rebuild extension-webm
-        if: env.IS_ANDROID != 'true' && inputs.name != 'iOS'
+        if: "!contains(inputs.name, 'Android') && inputs.name != 'iOS'"
         shell: bash
         run: haxelib run lime rebuild extension-webm ${{ inputs.buildArgs }}
 
       - name: Configure Android SDK/NDK/JDK for Lime
-        if: env.IS_ANDROID == 'true'
+        if: contains(inputs.name, 'Android')
         shell: bash
         run: |
           haxelib run lime config ANDROID_SDK "$ANDROID_HOME"
@@ -155,7 +155,7 @@ jobs:
           fi
 
       - name: Clean up keystore
-        if: always() && env.IS_ANDROID == 'true'
+        if: always() && contains(inputs.name, 'Android')
         shell: bash
         run: rm -f release.keystore
 
