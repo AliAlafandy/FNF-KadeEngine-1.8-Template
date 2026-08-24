@@ -2,7 +2,8 @@ package mobile.backend;
 
 import haxe.io.Bytes;
 
-#if lime_opengl
+#if (lime && !macro)
+import lime.graphics.RenderContext;
 import lime.graphics.opengl.GL;
 import lime.graphics.opengl.GLTexture;
 #end
@@ -21,7 +22,6 @@ typedef ASTCHeader =
 class ASTCLoader
 {
 	inline static var MAGIC:Int = 0x5CA1AB13;
-
 	inline static var HEADER_SIZE:Int = 16;
 
 	static var FORMAT_TABLE:Map<String, Int> = [
@@ -51,21 +51,13 @@ class ASTCLoader
 		if (magic != MAGIC)
 			return null;
 
-		var blockWidth:Int = bytes.get(4);
-		var blockHeight:Int = bytes.get(5);
-		var blockDepth:Int = bytes.get(6);
-
-		var width:Int = bytes.get(7) | (bytes.get(8) << 8) | (bytes.get(9) << 16);
-		var height:Int = bytes.get(10) | (bytes.get(11) << 8) | (bytes.get(12) << 16);
-		var depth:Int = bytes.get(13) | (bytes.get(14) << 8) | (bytes.get(15) << 16);
-
 		return {
-			blockWidth: blockWidth,
-			blockHeight: blockHeight,
-			blockDepth: blockDepth,
-			width: width,
-			height: height,
-			depth: depth,
+			blockWidth: bytes.get(4),
+			blockHeight: bytes.get(5),
+			blockDepth: bytes.get(6),
+			width: bytes.get(7) | (bytes.get(8) << 8) | (bytes.get(9) << 16),
+			height: bytes.get(10) | (bytes.get(11) << 8) | (bytes.get(12) << 16),
+			depth: bytes.get(13) | (bytes.get(14) << 8) | (bytes.get(15) << 16),
 			dataOffset: HEADER_SIZE
 		};
 	}
@@ -77,52 +69,38 @@ class ASTCLoader
 
 	public static function isSupported():Bool
 	{
-		#if lime_opengl
+		#if (lime && !macro)
 		if (GL.context == null)
 			return false;
 
 		var extensions:String = GL.getParameterString(GL.EXTENSIONS);
-
 		return extensions != null && extensions.indexOf('texture_compression_astc') != -1;
 		#else
 		return false;
 		#end
 	}
 
+	#if (lime && !macro)
 	public static function uploadCompressedTexture(bytes:Bytes):GLTexture
 	{
-		#if lime_opengl
 		var header = parseHeader(bytes);
 
 		if (header == null)
-		{
-			Debug.logWarn('Invalid ASTC file: missing or incorrect magic number');
 			return null;
-		}
 
 		if (header.blockDepth != 1 || header.depth != 1)
-		{
-			Debug.logWarn('3D ASTC textures are not supported');
 			return null;
-		}
 
-		var key = formatKey(header.blockWidth, header.blockHeight);
+		var key:String = formatKey(header.blockWidth, header.blockHeight);
 
 		if (!FORMAT_TABLE.exists(key))
-		{
-			Debug.logWarn('Unsupported ASTC block size: $key');
 			return null;
-		}
 
 		if (!isSupported())
-		{
-			Debug.logWarn('GPU/driver does not report ASTC texture compression support');
 			return null;
-		}
 
 		var glFormat:Int = FORMAT_TABLE.get(key);
-
-		var pixelData = bytes.sub(header.dataOffset, bytes.length - header.dataOffset);
+		var pixelData:Bytes = bytes.sub(header.dataOffset, bytes.length - header.dataOffset);
 
 		var texture:GLTexture = GL.createTexture();
 
@@ -137,15 +115,16 @@ class ASTCLoader
 		GL.bindTexture(GL.TEXTURE_2D, null);
 
 		return texture;
-		#else
-		Debug.logWarn('ASTCLoader requires the lime_opengl target');
-		return null;
-		#end
 	}
+	#else
+	public static function uploadCompressedTexture(bytes:Bytes):Dynamic
+	{
+		return null;
+	}
+	#end
 
 	public static function decode(bytes:Bytes):Dynamic
 	{
-		Debug.logWarn('ASTCLoader.decode is not implemented, use uploadCompressedTexture instead');
 		return null;
 	}
 }
