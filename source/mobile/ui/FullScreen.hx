@@ -8,9 +8,8 @@ class FullScreen
 {
 	public static var active:Bool = true;
 
-	static var baseWidth:Int;
-	static var baseHeight:Int;
-
+	static var baseWidth:Int = 1280;
+	static var baseHeight:Int = 720;
 	static var initialized:Bool = false;
 
 	public static function init(gameWidth:Int, gameHeight:Int):Void
@@ -18,7 +17,6 @@ class FullScreen
 		baseWidth = gameWidth;
 		baseHeight = gameHeight;
 
-		#if mobile
 		if (!initialized)
 		{
 			Lib.current.stage.addEventListener(Event.RESIZE, onResize);
@@ -26,7 +24,6 @@ class FullScreen
 		}
 
 		apply();
-		#end
 	}
 
 	static function onResize(e:Event):Void
@@ -36,11 +33,13 @@ class FullScreen
 
 	public static function apply():Void
 	{
-		#if mobile
 		if (!active || baseWidth <= 0 || baseHeight <= 0)
 			return;
 
 		var stage = Lib.current.stage;
+		if (stage == null)
+			return;
+
 		var stageWidth:Int = stage.stageWidth;
 		var stageHeight:Int = stage.stageHeight;
 
@@ -67,11 +66,13 @@ class FullScreen
 			FlxG.resizeGame(newWidth, newHeight);
 			recenterCameras(newWidth, newHeight);
 		}
-		#end
 	}
 
 	static function recenterCameras(width:Int, height:Int):Void
 	{
+		if (FlxG.cameras == null || FlxG.cameras.list == null)
+			return;
+
 		for (camera in FlxG.cameras.list)
 		{
 			if (camera == null)
