@@ -1,24 +1,20 @@
+import flixel.FlxG;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 import openfl.Lib;
 import openfl.display.Bitmap;
-import openfl.display.BitmapData;
-import flixel.FlxG;
-import haxe.Timer;
 import openfl.events.Event;
 import openfl.events.TouchEvent;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
+
 #if gl_stats
 import openfl.display._internal.stats.Context3DStats;
 import openfl.display._internal.stats.DrawCallContext;
 #end
-#if flash
-import openfl.Lib;
-#end
 
 #if mobile
-import mobile.ui.Fullscreen;
+import mobile.ui.FullScreen;
 #end
 
 #if !openfl_debug
@@ -28,7 +24,6 @@ import mobile.ui.Fullscreen;
 class KadeEngineFPS extends TextField
 {
 	public var currentFPS(default, null):Int;
-
 	public var bitmap:Bitmap;
 
 	@:noCompletion private var cacheCount:Int;
@@ -39,13 +34,23 @@ class KadeEngineFPS extends TextField
 	static inline var MOBILE_UPDATE_INTERVAL:Float = 250;
 
 	var timeSinceUpdate:Float = 0;
-
 	var tapZoneSize:Float = 96;
-
 	var baseX:Float;
-
 	var baseY:Float;
 	#end
+
+	var array:Array<FlxColor> = [
+		FlxColor.fromRGB(148, 0, 211),
+		FlxColor.fromRGB(75, 0, 130),
+		FlxColor.fromRGB(0, 0, 255),
+		FlxColor.fromRGB(0, 255, 0),
+		FlxColor.fromRGB(255, 255, 0),
+		FlxColor.fromRGB(255, 127, 0),
+		FlxColor.fromRGB(255, 0, 0)
+	];
+
+	var skippedFrames:Int = 0;
+	public static var currentColor:Int = 0;
 
 	public function new(x:Float = 10, y:Float = 10, color:Int = 0x000000)
 	{
@@ -56,7 +61,7 @@ class KadeEngineFPS extends TextField
 		baseY = y;
 
 		var scale:Float = getMobileScale();
-		var safeBounds = Fullscreen.getSafeBounds();
+		var safeBounds = FullScreen.getSafeBounds();
 		this.x = safeBounds.x + (x * scale);
 		this.y = safeBounds.y + (y * scale);
 		#else
@@ -74,7 +79,10 @@ class KadeEngineFPS extends TextField
 		fontSize = Math.round(fontSize * getMobileScale());
 		#end
 
-		defaultTextFormat = new TextFormat(openfl.utils.Assets.getFont("assets/fonts/vcr.ttf").fontName, fontSize, color);
+		var font = openfl.utils.Assets.getFont("assets/fonts/vcr.ttf");
+		var fontName:String = font != null ? font.fontName : "_sans";
+
+		defaultTextFormat = new TextFormat(fontName, fontSize, color);
 		text = "FPS: ";
 		width += 200;
 
@@ -91,36 +99,33 @@ class KadeEngineFPS extends TextField
 		#end
 
 		bitmap = ImageOutline.renderImage(this, 1, 0x000000, 1, true);
-		Main.instance.addChild(bitmap);
+		if (Main.instance != null)
+			Main.instance.addChild(bitmap);
 
 		#if mobile
 		setupMobileToggle();
-		Lib.current.stage.addEventListener(Event.RESIZE, onMobileResize);
+		if (Lib.current != null && Lib.current.stage != null)
+			Lib.current.stage.addEventListener(Event.RESIZE, onMobileResize);
 		#end
 	}
 
 	#if mobile
 	function getMobileScale():Float
 	{
-		var baseHeight:Float = Fullscreen.getBaseHeight();
-
-		if (baseHeight <= 0)
-			baseHeight = 720;
-
-		var actualHeight:Float = Lib.current.stage.stageHeight;
+		var baseHeight:Float = 720;
+		var actualHeight:Float = (Lib.current != null && Lib.current.stage != null) ? Lib.current.stage.stageHeight : 0;
 
 		if (actualHeight <= 0)
 			return 1;
 
 		var scale:Float = actualHeight / baseHeight;
-
 		return scale < 1 ? 1 : scale;
 	}
 
 	function onMobileResize(e:Event):Void
 	{
 		var scale:Float = getMobileScale();
-		var safeBounds = Fullscreen.getSafeBounds();
+		var safeBounds = FullScreen.getSafeBounds();
 
 		this.x = safeBounds.x + (baseX * scale);
 		this.y = safeBounds.y + (baseY * scale);
@@ -128,34 +133,24 @@ class KadeEngineFPS extends TextField
 
 	function setupMobileToggle():Void
 	{
-		Lib.current.stage.addEventListener(TouchEvent.TOUCH_TAP, onMobileTap);
+		if (Lib.current != null && Lib.current.stage != null)
+			Lib.current.stage.addEventListener(TouchEvent.TOUCH_TAP, onMobileTap);
 	}
 
 	function onMobileTap(e:TouchEvent):Void
 	{
-		var safeBounds = Fullscreen.getSafeBounds();
+		var safeBounds = FullScreen.getSafeBounds();
 
 		if (e.stageX <= safeBounds.x + tapZoneSize && e.stageY <= safeBounds.y + tapZoneSize)
 		{
-			FlxG.save.data.fps = !FlxG.save.data.fps;
-			FlxG.save.flush();
+			if (FlxG.save != null && FlxG.save.data != null)
+			{
+				FlxG.save.data.fps = !FlxG.save.data.fps;
+				FlxG.save.flush();
+			}
 		}
 	}
 	#end
-
-	var array:Array<FlxColor> = [
-		FlxColor.fromRGB(148, 0, 211),
-		FlxColor.fromRGB(75, 0, 130),
-		FlxColor.fromRGB(0, 0, 255),
-		FlxColor.fromRGB(0, 255, 0),
-		FlxColor.fromRGB(255, 255, 0),
-		FlxColor.fromRGB(255, 127, 0),
-		FlxColor.fromRGB(255, 0, 0)
-	];
-
-	var skippedFrames = 0;
-
-	public static var currentColor = 0;
 
 	@:noCompletion
 	private #if !flash override #end function __enterFrame(deltaTime:Float):Void
@@ -169,50 +164,67 @@ class KadeEngineFPS extends TextField
 		timeSinceUpdate = 0;
 		#end
 
-		if (MusicBeatState.initSave)
-			if (FlxG.save.data.fpsRain)
-			{
-				if (currentColor >= array.length)
-					currentColor = 0;
-				currentColor = Math.round(FlxMath.lerp(0, array.length, skippedFrames / (FlxG.save.data.fpsCap / 3)));
+		if (MusicBeatState.initSave && FlxG.save != null && FlxG.save.data != null && FlxG.save.data.fpsRain)
+		{
+			if (currentColor >= array.length)
+				currentColor = 0;
+
+			var fpsCap:Float = FlxG.save.data.fpsCap != null ? FlxG.save.data.fpsCap : 60;
+			var capDiv:Float = fpsCap / 3;
+			if (capDiv <= 0)
+				capDiv = 20;
+
+			currentColor = Math.round(FlxMath.lerp(0, array.length - 1, skippedFrames / capDiv));
+			
+			if (Main.instance != null)
 				Main.instance.changeFPSColor(array[currentColor]);
-				currentColor++;
-				skippedFrames++;
-				if (skippedFrames > (FlxG.save.data.fpsCap / 3))
-					skippedFrames = 0;
-			}
+
+			currentColor++;
+			skippedFrames++;
+			if (skippedFrames > capDiv)
+				skippedFrames = 0;
+		}
 
 		currentTime += deltaTime;
 		times.push(currentTime);
 
-		while (times[0] < currentTime - 1000)
+		while (times.length > 0 && times[0] < currentTime - 1000)
 		{
 			times.shift();
 		}
 
-		var currentCount = times.length;
+		var currentCount:Int = times.length;
 		currentFPS = Math.round((currentCount + cacheCount) / 2);
+
+		var isFpsEnabled:Bool = (FlxG.save != null && FlxG.save.data != null && FlxG.save.data.fps != null) ? FlxG.save.data.fps : true;
 
 		if (currentCount != cacheCount)
 		{
-			text = (FlxG.save.data.fps ? "FPS: "
-				+ currentFPS
-				+ (Main.watermarks ? "\nKE " + "v" + MainMenuState.kadeEngineVer : "") : (Main.watermarks ? "KE " + "v" + MainMenuState.kadeEngineVer : ""));
+			text = isFpsEnabled ? "FPS: " + currentFPS : "";
+
+			if (Main.watermarks)
+			{
+				if (text.length > 0)
+					text += "\n";
+				text += "KE v" + MainMenuState.kadeEngineVer;
+			}
 
 			#if (gl_stats && !disable_cffi && (!html5 || !canvas))
 			text += "\ntotalDC: " + Context3DStats.totalDrawCalls();
-
 			text += "\nstageDC: " + Context3DStats.contextDrawCalls(DrawCallContext.STAGE);
 			text += "\nstage3DDC: " + Context3DStats.contextDrawCalls(DrawCallContext.STAGE3D);
 			#end
 
 			visible = true;
 
-			Main.instance.removeChild(bitmap);
+			if (Main.instance != null && bitmap != null)
+			{
+				if (Main.instance.contains(bitmap))
+					Main.instance.removeChild(bitmap);
 
-			bitmap = ImageOutline.renderImage(this, 2, 0x000000, 1);
-
-			Main.instance.addChild(bitmap);
+				bitmap = ImageOutline.renderImage(this, 2, 0x000000, 1);
+				Main.instance.addChild(bitmap);
+			}
 
 			visible = false;
 		}
