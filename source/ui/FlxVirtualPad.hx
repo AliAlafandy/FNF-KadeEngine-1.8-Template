@@ -1,4 +1,4 @@
-# if mobileC
+#if mobile
 package ui;
 
 import flixel.FlxG;
@@ -13,12 +13,6 @@ import flash.display.BitmapData;
 import flixel.graphics.FlxGraphic;
 import openfl.utils.ByteArray;
 
-/**
- * A gamepad which contains 4 directional buttons and 4 action buttons.
- * It's easy to set the callbacks and to customize the layout.
- *
- * @author Ka Wing Chin
- */
 @:keep @:bitmap("assets/preload/images/virtual-input.png")
 class GraphicVirtualInput extends BitmapData {}
  
@@ -52,23 +46,9 @@ class FlxVirtualPad extends FlxSpriteGroup
 	public var buttonUp2:FlxButton;
 	public var buttonDown2:FlxButton;
 
-
-	/**
-	 * Group of directions buttons.
-	 */
 	public var dPad:FlxSpriteGroup;
-
-	/**
-	 * Group of action buttons.
-	 */
 	public var actions:FlxSpriteGroup;
 
-	/**
-	 * Create a gamepad which contains 4 directional buttons and 4 action buttons.
-	 *
-	 * @param   DPadMode     The D-Pad mode. `FULL` for example.
-	 * @param   ActionMode   The action buttons mode. `A_B_C` for example.
-	 */
 	public function new(?DPad:FlxDPadMode, ?Action:FlxActionMode)
 	{
 		super();
@@ -115,7 +95,7 @@ class FlxVirtualPad extends FlxSpriteGroup
 				dPad.add(add(buttonLeft = createButton(40 * 3, FlxG.height - 81 * 3, 44 * 3, 45 * 3, "left")));
 				dPad.add(add(buttonRight = createButton(109 * 3, FlxG.height - 81 * 3, 44 * 3, 45 * 3, "right")));
 				dPad.add(add(buttonDown = createButton(75 * 3, FlxG.height - 45 * 3, 44 * 3, 45 * 3, "down")));
-			case NONE: // do nothing
+			case NONE:
 		}
 
 		switch (Action)
@@ -168,7 +148,7 @@ class FlxVirtualPad extends FlxSpriteGroup
 				actions.add(add(buttonX = createButton(FlxG.width - 44, FlxG.height - 85, 44, 45, "x")));
 				actions.add(add(buttonB = createButton(FlxG.width - 86, FlxG.height - 45, 44, 45, "b")));
 				actions.add(add(buttonA = createButton(FlxG.width - 44, FlxG.height - 45, 44, 45, "a")));
-			case NONE: // do nothing
+			case NONE:
 		}
 	}
 
@@ -206,15 +186,6 @@ class FlxVirtualPad extends FlxSpriteGroup
 		buttonDown2 = null;
 	}
 
-	/**
-	 * @param   X          The x-position of the button.
-	 * @param   Y          The y-position of the button.
-	 * @param   Width      The width of the button.
-	 * @param   Height     The height of the button.
-	 * @param   Graphic    The image of the button. It must contains 3 frames (`NORMAL`, `HIGHLIGHT`, `PRESSED`).
-	 * @param   Callback   The callback for the button.
-	 * @return  The button
-	 */
 	public function createButton(X:Float, Y:Float, Width:Int, Height:Int, Graphic:String, ?OnClick:Void->Void):FlxButton
 	{
 		var button = new FlxButton(X, Y);
@@ -237,24 +208,17 @@ class FlxVirtualPad extends FlxSpriteGroup
 
 	public static function getVirtualInputFrames():FlxAtlasFrames
 	{
-			#if !web
-			var bitmapData = new GraphicVirtualInput(0, 0);
-			#end
+		#if !web
+		var bitmapData = new GraphicVirtualInput(0, 0);
+		#end
 
-			/*
-			#if html5 // dirty hack for openfl/openfl#682
-			Reflect.setProperty(bitmapData, "width", 399);
-			Reflect.setProperty(bitmapData, "height", 183);
-			#end
-			*/
-			
-			#if !web
-			var graphic:FlxGraphic = FlxGraphic.fromBitmapData(bitmapData);
-			return FlxAtlasFrames.fromSpriteSheetPacker(graphic, Std.string(new VirtualInputData()));
-			#else
-			var graphic:FlxGraphic = FlxGraphic.fromAssetKey(Paths.image('virtual-input'));
-			return FlxAtlasFrames.fromSpriteSheetPacker(graphic, Std.string(new VirtualInputData()));
-			#end
+		#if !web
+		var graphic:FlxGraphic = FlxGraphic.fromBitmapData(bitmapData);
+		return FlxAtlasFrames.fromSpriteSheetPacker(graphic, Std.string(new VirtualInputData()));
+		#else
+		var graphic:FlxGraphic = FlxGraphic.fromAssetKey(Paths.image('virtual-input'));
+		return FlxAtlasFrames.fromSpriteSheetPacker(graphic, Std.string(new VirtualInputData()));
+		#end
 	}
 }
 
