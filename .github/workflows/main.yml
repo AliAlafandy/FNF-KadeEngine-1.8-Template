@@ -61,7 +61,7 @@ jobs:
 
   BuildAndroid:
     name: ${{ matrix.name }}
-    if: ${{ inputs.buildAndroid }}
+    if: ${{ github.event.inputs.buildAndroid == 'true' || github.event.inputs.buildAndroid == true }}
     strategy:
       fail-fast: false
       matrix:
@@ -86,7 +86,7 @@ jobs:
 
   BuildIOS:
     name: iOS
-    if: ${{ inputs.buildIOS }}
+    if: ${{ github.event.inputs.buildIOS == 'true' || github.event.inputs.buildIOS == true }}
     uses: ./.github/workflows/build.yml
     with:
       name: iOS
