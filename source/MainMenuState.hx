@@ -47,13 +47,15 @@ class MainMenuState extends MusicBeatState
 
 	public static var finishedFunnyMove:Bool = false;
 
+	var swipeStartY:Float = 0;
+	var swipeStartX:Float = 0;
+	var isSwiping:Bool = false;
+
 	override function create()
 	{
-		trace(0 / 2);
 		clean();
 		PlayState.inDaPlay = false;
 		#if FEATURE_DISCORD
-		// Updating Discord Rich Presence
 		DiscordClient.changePresence("In the Menus", null);
 		#end
 
@@ -86,7 +88,6 @@ class MainMenuState extends MusicBeatState
 		magenta.antialiasing = FlxG.save.data.antialiasing;
 		magenta.color = 0xFFfd719b;
 		add(magenta);
-		// magenta.scrollFactor.set();
 
 		menuItems = new FlxTypedGroup<FlxSprite>();
 		add(menuItems);
@@ -127,8 +128,6 @@ class MainMenuState extends MusicBeatState
 		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionShit);
 
-		// NG.core.calls.event.logEvent('swag').send();
-
 		if (FlxG.save.data.dfjk)
 			controls.setKeyboardScheme(KeyboardScheme.Solo, true);
 		else
@@ -136,9 +135,9 @@ class MainMenuState extends MusicBeatState
 
 		changeItem();
 
-	#if mobileC
-	addVirtualPad(UP_DOWN, A_B);
-	#end
+		#if mobileC
+		addVirtualPad(UP_DOWN, A_B);
+		#end
 
 		super.create();
 	}
@@ -187,51 +186,11 @@ class MainMenuState extends MusicBeatState
 				FlxG.switchState(new TitleState());
 			}
 
+			handleTouchInput();
+
 			if (controls.ACCEPT)
 			{
-				if (optionShit[curSelected] == 'donate')
-				{
-					fancyOpenURL("https://ninja-muffin24.itch.io/funkin");
-				}
-				else
-				{
-					selectedSomethin = true;
-					FlxG.sound.play(Paths.sound('confirmMenu'));
-
-					if (FlxG.save.data.flashing)
-						FlxFlicker.flicker(magenta, 1.1, 0.15, false);
-
-					menuItems.forEach(function(spr:FlxSprite)
-					{
-						if (curSelected != spr.ID)
-						{
-							FlxTween.tween(spr, {alpha: 0}, 1.3, {
-								ease: FlxEase.quadOut,
-								onComplete: function(twn:FlxTween)
-								{
-									spr.kill();
-								}
-							});
-						}
-						else
-						{
-							if (FlxG.save.data.flashing)
-							{
-								FlxFlicker.flicker(spr, 1, 0.06, false, false, function(flick:FlxFlicker)
-								{
-									goToState();
-								});
-							}
-							else
-							{
-								new FlxTimer().start(1, function(tmr:FlxTimer)
-								{
-									goToState();
-								});
-							}
-						}
-					});
-				}
+				selectCurrentOption();
 			}
 		}
 
@@ -243,6 +202,111 @@ class MainMenuState extends MusicBeatState
 		});
 	}
 
+	function handleTouchInput()
+	{
+		for (touch in FlxG.touches.list)
+		{
+			if (touch.justPressed)
+			{
+				swipeStartY = touch.screenY;
+				swipeStartX = touch.screenX;
+				isSwiping = true;
+
+				menuItems.forEach(function(spr:FlxSprite)
+				{
+					if (touch.overlaps(spr))
+					{
+						if (curSelected != spr.ID)
+						{
+							curSelected = spr.ID;
+							FlxG.sound.play(Paths.sound('scrollMenu'));
+							changeItem();
+						}
+					}
+				});
+			}
+
+			if (touch.justReleased && isSwiping)
+			{
+				var deltaY:Float = touch.screenY - swipeStartY;
+				var deltaX:Float = touch.screenX - swipeStartX;
+
+				if (Math.abs(deltaY) > 50 && Math.abs(deltaY) > Math.abs(deltaX))
+				{
+					if (deltaY < 0)
+					{
+						FlxG.sound.play(Paths.sound('scrollMenu'));
+						changeItem(1);
+					}
+					else if (deltaY > 0)
+					{
+						FlxG.sound.play(Paths.sound('scrollMenu'));
+						changeItem(-1);
+					}
+				}
+				else if (Math.abs(deltaY) < 20 && Math.abs(deltaX) < 20)
+				{
+					menuItems.forEach(function(spr:FlxSprite)
+					{
+						if (touch.overlaps(spr) && spr.ID == curSelected)
+						{
+							selectCurrentOption();
+						}
+					});
+				}
+
+				isSwiping = false;
+			}
+		}
+	}
+
+	function selectCurrentOption()
+	{
+		if (optionShit[curSelected] == 'donate')
+		{
+			fancyOpenURL("https://ninja-muffin24.itch.io/funkin");
+		}
+		else
+		{
+			selectedSomethin = true;
+			FlxG.sound.play(Paths.sound('confirmMenu'));
+
+			if (FlxG.save.data.flashing)
+				FlxFlicker.flicker(magenta, 1.1, 0.15, false);
+
+			menuItems.forEach(function(spr:FlxSprite)
+			{
+				if (curSelected != spr.ID)
+				{
+					FlxTween.tween(spr, {alpha: 0}, 1.3, {
+						ease: FlxEase.quadOut,
+						onComplete: function(twn:FlxTween)
+						{
+							spr.kill();
+						}
+					});
+				}
+				else
+				{
+					if (FlxG.save.data.flashing)
+					{
+						FlxFlicker.flicker(spr, 1, 0.06, false, false, function(flick:FlxFlicker)
+						{
+							goToState();
+						});
+					}
+					else
+					{
+						new FlxTimer().start(1, function(tmr:FlxTimer)
+						{
+							goToState();
+						});
+					}
+				}
+			});
+		}
+	}
+
 	function goToState()
 	{
 		var daChoice:String = optionShit[curSelected];
@@ -251,12 +315,8 @@ class MainMenuState extends MusicBeatState
 		{
 			case 'story mode':
 				FlxG.switchState(new StoryMenuState());
-				trace("Story Menu Selected");
 			case 'freeplay':
 				FlxG.switchState(new FreeplayState());
-
-				trace("Freeplay Menu Selected");
-
 			case 'options':
 				FlxG.switchState(new OptionsDirect());
 		}
