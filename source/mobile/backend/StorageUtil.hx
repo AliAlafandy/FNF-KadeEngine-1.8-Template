@@ -5,7 +5,10 @@ import lime.system.System;
 #if sys
 import sys.FileSystem;
 import sys.io.File;
+import haxe.io.Path;
 #end
+
+using StringTools;
 
 class StorageUtil
 {
@@ -18,10 +21,7 @@ class StorageUtil
 		if (dir == null || dir.length == 0)
 			dir = './';
 
-		if (!dir.endsWith('/') && !dir.endsWith('\\'))
-			dir += '/';
-
-		return dir;
+		return Path.addTrailingSlash(dir);
 	}
 
 	public static function resolvePath(relativePath:String):String
@@ -29,10 +29,10 @@ class StorageUtil
 		if (relativePath == null)
 			relativePath = '';
 
-		if (relativePath.length > 0 && (relativePath.charAt(0) == '/' || relativePath.charAt(0) == '\\'))
+		while (relativePath.startsWith('/') || relativePath.startsWith('\\'))
 			relativePath = relativePath.substr(1);
 
-		return baseDirectory + relativePath;
+		return Path.normalize(baseDirectory + relativePath);
 	}
 
 	public static function exists(relativePath:String):Bool
@@ -78,14 +78,12 @@ class StorageUtil
 
 	public static function ensureDirectoryFor(relativeFilePath:String):Bool
 	{
-		var slashIndex:Int = relativeFilePath.lastIndexOf('/');
-		var backslashIndex:Int = relativeFilePath.lastIndexOf('\\');
-		var cutIndex:Int = slashIndex > backslashIndex ? slashIndex : backslashIndex;
+		var directoryPath:String = Path.directory(relativeFilePath);
 
-		if (cutIndex <= 0)
+		if (directoryPath == null || directoryPath.length == 0 || directoryPath == '.')
 			return true;
 
-		return createDirectory(relativeFilePath.substr(0, cutIndex));
+		return createDirectory(directoryPath);
 	}
 
 	public static function readString(relativePath:String, defaultValue:String = null):String
@@ -112,7 +110,11 @@ class StorageUtil
 	public static function writeString(relativePath:String, content:String):Bool
 	{
 		#if sys
-		ensureDirectoryFor(relativePath);
+		if (content == null)
+			return false;
+
+		if (!ensureDirectoryFor(relativePath))
+			return false;
 
 		var path:String = resolvePath(relativePath);
 
@@ -157,7 +159,8 @@ class StorageUtil
 		if (bytes == null)
 			return false;
 
-		ensureDirectoryFor(relativePath);
+		if (!ensureDirectoryFor(relativePath))
+			return false;
 
 		var path:String = resolvePath(relativePath);
 
@@ -209,11 +212,13 @@ class StorageUtil
 		{
 			if (recursive)
 			{
-				for (entry in FileSystem.readDirectory(path))
+				var entries:Array<String> = FileSystem.readDirectory(path);
+				for (entry in entries)
 				{
-					var entryRelative:String = relativePath + '/' + entry;
+					var entryRelative:String = Path.join([relativePath, entry]);
+					var fullEntryPath:String = resolvePath(entryRelative);
 
-					if (FileSystem.isDirectory(path + '/' + entry))
+					if (FileSystem.isDirectory(fullEntryPath))
 						deleteDirectory(entryRelative, true);
 					else
 						deleteFile(entryRelative);
