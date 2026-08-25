@@ -122,7 +122,10 @@ class StageDebugState extends FlxState
 		var camcontrol = new FlxCamera();
 		FlxG.cameras.add(camcontrol);
 		camcontrol.bgColor.alpha = 0;
+
+		#if mobileC
 		_pad.cameras = [camcontrol];
+		#end
 
 		posText = new FlxText(0, 0);
 		posText.size = 26;
