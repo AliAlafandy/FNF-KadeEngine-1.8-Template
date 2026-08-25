@@ -372,7 +372,7 @@ class OptionsMenu extends FlxSubState
 		down = FlxG.keys.justPressed.DOWN #if mobileC || _pad.buttonDown.justPressed #end || (gamepad != null ? gamepad.justPressed.DPAD_DOWN : false);
 
 		any = FlxG.keys.justPressed.ANY || (gamepad != null ? gamepad.justPressed.ANY : false);
-		escape = FlxG.keys.justPressed.ESCAPE || #if mobileC _pad.buttonB.justPressed #end || (gamepad != null ? gamepad.justPressed.B : false);
+		escape = FlxG.keys.justPressed.ESCAPE #if mobileC || _pad.buttonB.justPressed #end || (gamepad != null ? gamepad.justPressed.B : false);
 
 		if (selectedCat != null && !isInCat)
 		{
