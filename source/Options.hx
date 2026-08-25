@@ -1767,6 +1767,7 @@ class ResetScoreOption extends Option
 	}
 }
 
+#if mobileC
 class MobileControls extends Option
 {
 	public function new(desc:String)
@@ -1785,6 +1786,8 @@ class MobileControls extends Option
 	}
 
 }
+#end
+
 class ResetSettings extends Option
 {
 	var confirm:Bool = false;
