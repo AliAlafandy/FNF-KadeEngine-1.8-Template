@@ -5,9 +5,11 @@ import flixel.FlxCamera;
 import flixel.text.FlxText;
 import lime.app.Application;
 import flixel.FlxBasic;
+
 #if FEATURE_DISCORD
 import Discord.DiscordClient;
 #end
+
 import flixel.util.FlxColor;
 import openfl.Lib;
 import Conductor.BPMChangeEvent;
