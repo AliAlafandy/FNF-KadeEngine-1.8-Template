@@ -1,4 +1,4 @@
-# if mobileC
+#if mobileC
 package ui;
 
 import flixel.FlxG;
