@@ -389,23 +389,28 @@ class Controls extends FlxActionSet
 		}
 	}
 
-	public function removeFlxInput(Tinputs) {
-		for (action in this.digitalActions)
-		{
-			var i = action.inputs.length;
+	public function removeFlxInput(Tinputs:Array<FlxActionInput>) {
+    	for (action in this.digitalActions)
+    	{
+        	var i:Int = action.inputs.length;
 
-			while (i-- > 0)
-			{
-				var input = action.inputs[i];
+        	while (i-- > 0)
+        	{
+            	var input:FlxActionInput = action.inputs[i];
 				/*if (input.device == IFLXINPUT_OBJECT)
 					action.remove(input);*/
 
-				var x = Tinputs.length;
-				while (x-- > 0)
-					if (Tinputs[x] == input)
-						action.remove(input);
-			}
-		}
+            	var x:Int = Tinputs.length;
+            	while (x-- > 0)
+            	{
+                	if (Tinputs[x] == input)
+                	{
+                    	action.remove(input);
+                    	break;
+                	}
+            	}
+        	}
+    	}
 	}
 
 	#if android
