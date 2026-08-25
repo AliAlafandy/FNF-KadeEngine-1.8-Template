@@ -168,16 +168,16 @@ class StageDebugState extends FlxState
 
 		if (FlxG.keys.pressed.I || FlxG.keys.pressed.J || FlxG.keys.pressed.K || FlxG.keys.pressed.L #if mobileC || _pad.buttonUp.pressed || _pad.buttonDown.pressed || _pad.buttonLeft.pressed ||_pad.buttonRight.pressed #end)
 		{
-			if (FlxG.keys.pressed.I #if mobileC _pad.buttonUp.pressed #end)
+			if (FlxG.keys.pressed.I #if mobileC || _pad.buttonUp.pressed #end)
 				camFollow.velocity.y = -90;
-			else if (FlxG.keys.pressed.K #if mobileC _pad.buttonDown.pressed #end)
+			else if (FlxG.keys.pressed.K #if mobileC || _pad.buttonDown.pressed #end)
 				camFollow.velocity.y = 90;
 			else
 				camFollow.velocity.y = 0;
 
-			if (FlxG.keys.pressed.J #if mobileC _pad.buttonLeft.pressed #end)
+			if (FlxG.keys.pressed.J #if mobileC || _pad.buttonLeft.pressed #end)
 				camFollow.velocity.x = -90;
-			else if (FlxG.keys.pressed.L #if mobileC _pad.buttonRight.pressed #end)
+			else if (FlxG.keys.pressed.L #if mobileC || _pad.buttonRight.pressed #end)
 				camFollow.velocity.x = 90;
 			else
 				camFollow.velocity.x = 0;
@@ -220,7 +220,7 @@ class StageDebugState extends FlxState
 			curChar.angle -= 1 * Math.ceil(elapsed);
 		else if (FlxG.keys.pressed.X #if mobileC || _pad.buttonR.pressed #end)
 			curChar.angle += 1 * Math.ceil(elapsed);
-		else if (FlxG.keys.pressed.R #if mobileC _pad.buttonR2.justPressed #end)
+		else if (FlxG.keys.pressed.R #if mobileC || _pad.buttonR2.justPressed #end)
 			curChar.angle = 0;
 
 		posText.text = (curCharString + " X: " + curChar.x + " Y: " + curChar.y + " Rotation: " + curChar.angle);
