@@ -54,8 +54,10 @@
     },
     {
       "name": "hxcpp",
-      "type": "haxelib",
-      "version": "4.3.2"
+      "type": "git",
+      "dir": null,
+      "ref": "main"
+      "url": "https://github.com/AlafandyPorting/hxcpp-0.7.3"
     },
     {
       "name": "actuate",
