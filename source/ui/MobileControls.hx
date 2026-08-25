@@ -9,7 +9,7 @@ import ui.Hitbox;
 
 import Config;
 
-class Mobilecontrols extends FlxSpriteGroup
+class MobileControls extends FlxSpriteGroup
 {
 	public var mode:ControlsGroup = HITBOX;
 
