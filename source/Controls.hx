@@ -11,9 +11,9 @@ import flixel.input.actions.FlxActionSet;
 import flixel.input.gamepad.FlxGamepadButton;
 import flixel.input.gamepad.FlxGamepadInputID;
 import flixel.input.keyboard.FlxKey;
-import ui.Hitbox;
 
 #if mobile
+import ui.Hitbox;
 import ui.FlxVirtualPad;
 #end
 
@@ -317,6 +317,7 @@ class Controls extends FlxActionSet
 		//action.addInput(button, state);
 	}
 
+	#if mobileC
 	public function setHitBox(hitbox:Hitbox) 
 	{
 		inline forEachBound(Control.UP, (action, state) -> addbutton(action, hitbox.buttonUp, state));
@@ -418,6 +419,7 @@ class Controls extends FlxActionSet
 		_back.addKey(BACK, PRESSED);
 		*/
 	}
+	#end
 	#end
 
 	override function update()
