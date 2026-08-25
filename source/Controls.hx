@@ -43,6 +43,8 @@ enum abstract Action(String) to String from String
 	var SIX = "six";
 	var ONE = "one";
 	var SEVEN = "seven";
+	var VOLUME_UP = "volume_up";
+	var VOLUME_DOWN = "volume_down";
 }
 #else
 @:enum
@@ -68,6 +70,8 @@ abstract Action(String) to String from String
 	var SIX = "six";
 	var ONE = "one";
 	var SEVEN = "seven";
+	var VOLUME_UP = "volume_up";
+	var VOLUME_DOWN = "volume_down";
 }
 #end
 
@@ -92,6 +96,8 @@ enum Control
 	SIX;
 	ONE;
 	SEVEN;
+	VOLUME_UP;
+	VOLUME_DOWN;
 }
 
 enum KeyboardScheme
@@ -124,11 +130,15 @@ class Controls extends FlxActionSet
 	var _six = new FlxActionDigital(Action.SIX);
 	var _one = new FlxActionDigital(Action.ONE);
 	var _seven = new FlxActionDigital(Action.SEVEN);
+	var _volumeUp = new FlxActionDigital(Action.VOLUME_UP);
+	var _volumeDown = new FlxActionDigital(Action.VOLUME_DOWN);
 
 	public var byName:Map<String, FlxActionDigital> = [];
 	public var gamepadsAdded:Array<Int> = [];
 	public var keyboardScheme = KeyboardScheme.None;
 	public var trackedinputs:Array<FlxActionInput> = [];
+
+	private var _androidBackCallbacks:Array<Void->Void> = [];
 
 	public var UP(get, never):Bool; inline function get_UP() return _up.check();
 	public var LEFT(get, never):Bool; inline function get_LEFT() return _left.check();
@@ -153,6 +163,8 @@ class Controls extends FlxActionSet
 	public var SIX(get, never):Bool; inline function get_SIX() return _six.check();
 	public var ONE(get, never):Bool; inline function get_ONE() return _one.check();
 	public var SEVEN(get, never):Bool; inline function get_SEVEN() return _seven.check();
+	public var VOLUME_UP(get, never):Bool; inline function get_VOLUME_UP() return _volumeUp.check();
+	public var VOLUME_DOWN(get, never):Bool; inline function get_VOLUME_DOWN() return _volumeDown.check();
 
 	public function new(name, scheme = None)
 	{
@@ -163,7 +175,7 @@ class Controls extends FlxActionSet
 			_upP, _leftP, _rightP, _downP,
 			_upR, _leftR, _rightR, _downR,
 			_accept, _back, _pause, _reset, _cheat,
-			_six, _one, _seven
+			_six, _one, _seven, _volumeUp, _volumeDown
 		];
 
 		for (action in actions)
@@ -181,6 +193,10 @@ class Controls extends FlxActionSet
 
 		#if mobile
 		updateTouchSwipes();
+		#end
+
+		#if android
+		checkAndroidBack();
 		#end
 	}
 
@@ -271,14 +287,62 @@ class Controls extends FlxActionSet
 
 		switch (dir)
 		{
-			case UP: _upP.trigger();
-			case DOWN: _downP.trigger();
-			case LEFT: _leftP.trigger();
-			case RIGHT: _rightP.trigger();
+			case UP | UP_LEFT | UP_RIGHT:
+				triggerAction(_upP);
+			case DOWN | DOWN_LEFT | DOWN_RIGHT:
+				triggerAction(_downP);
+			case LEFT:
+				triggerAction(_leftP);
+			case RIGHT:
+				triggerAction(_rightP);
 			case NONE:
 		}
 	}
 	#end
+
+	private function triggerAction(action:FlxActionDigital):Void
+	{
+		#if (flixel >= "5.0.0")
+		action.triggered = true;
+		#else
+		action.check();
+		#end
+	}
+
+	public function addAndroidBack(callback:Void->Void):Void
+	{
+		if (callback != null && !_androidBackCallbacks.contains(callback))
+			_androidBackCallbacks.push(callback);
+	}
+
+	public function removeAndroidBack(callback:Void->Void):Void
+	{
+		if (callback != null)
+			_androidBackCallbacks.remove(callback);
+	}
+
+	public function clearAndroidBack():Void
+	{
+		_androidBackCallbacks = [];
+	}
+
+	private function checkAndroidBack():Void
+	{
+		#if android
+		if (FlxG.android.justReleased.BACK)
+		{
+			if (_androidBackCallbacks.length > 0)
+			{
+				var cb = _androidBackCallbacks[_androidBackCallbacks.length - 1];
+				if (cb != null) cb();
+			}
+			else
+			{
+				triggerAction(_back);
+			}
+		}
+		#end
+	}
 
 	public function removeTouchInputs():Void
 	{
@@ -320,6 +384,8 @@ class Controls extends FlxActionSet
 		inline bindKeys(Control.BACK, [BACKSPACE, ESCAPE]);
 		inline bindKeys(Control.PAUSE, [FlxKey.fromString(FlxG.save.data.pauseBind)]);
 		inline bindKeys(Control.RESET, [FlxKey.fromString(FlxG.save.data.resetBind)]);
+		inline bindKeys(Control.VOLUME_UP, [PLUS, NUMPADPLUS]);
+		inline bindKeys(Control.VOLUME_DOWN, [MINUS, NUMPADMINUS]);
 
 		FlxG.sound.muteKeys = [FlxKey.fromString(FlxG.save.data.muteBind)];
 		FlxG.sound.volumeDownKeys = [FlxKey.fromString(FlxG.save.data.volDownBind)];
@@ -351,6 +417,8 @@ class Controls extends FlxActionSet
 			case SIX: func(_six, JUST_PRESSED);
 			case ONE: func(_one, JUST_PRESSED);
 			case SEVEN: func(_seven, JUST_PRESSED);
+			case VOLUME_UP: func(_volumeUp, JUST_PRESSED);
+			case VOLUME_DOWN: func(_volumeDown, JUST_PRESSED);
 		}
 	}
 
