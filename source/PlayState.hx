@@ -2457,7 +2457,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if (!PlayStateChangeables.Optimize)
-			if (FlxG.keys.justPressed.EIGHT || _pad.buttonStage.justPressed && songStarted)
+			if (FlxG.keys.justPressed.EIGHT #if mobileC || _pad.buttonStage.justPressed #end && songStarted)
 			{
 				paused = true;
 				if (useVideo)
