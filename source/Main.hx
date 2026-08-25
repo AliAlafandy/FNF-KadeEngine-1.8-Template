@@ -109,7 +109,7 @@ class Main extends Sprite
 		bitmapFPS = ImageOutline.renderImage(fpsCounter, 1, 0x000000, true);
 		bitmapFPS.smoothing = true;
 
-		game = new FlxGame(gameWidth, gameHeight, initialState, zoom, framerate, framerate, skipSplash, startFullscreen);
+		game = new FlxGame(gameWidth, gameHeight, initialState, #if (flixel < "5.0.0") zoom, #end Std.int(framerate), Std.int(framerate), skipSplash, startFullscreen);
 		addChild(game);
 
 		addChild(fpsCounter);
