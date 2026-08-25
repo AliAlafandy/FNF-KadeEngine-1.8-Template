@@ -22,7 +22,10 @@ class MusicBeatSubstate extends FlxSubState
 
 	override function destroy()
 	{
+		#if mobileC
 		controls.removeFlxInput(trackedinputs);
+		#end
+
 		Application.current.window.onFocusIn.remove(onWindowFocusOut);
 		Application.current.window.onFocusIn.remove(onWindowFocusIn);
 		super.destroy();
@@ -64,8 +67,8 @@ class MusicBeatSubstate extends FlxSubState
 		#end
 	}
 
-	#else
-	public function addVirtualPad(?DPad, ?Action){};
+	/*#else
+	public function addVirtualPad(?DPad, ?Action){};*/
 	#end
 
 	override function update(elapsed:Float)
