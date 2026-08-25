@@ -46,11 +46,6 @@ jobs:
             buildArgs: mac
             artifactName: MacOS
             artifactPath: export/release/macos/bin/*
-          - name: Html5
-            os: ubuntu-24.04
-            buildArgs: html5
-            artifactName: HTML5
-            artifactPath: export/release/html5/bin/*
     uses: ./.github/workflows/build.yml
     with:
       name: ${{ matrix.name }}
