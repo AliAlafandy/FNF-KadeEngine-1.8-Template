@@ -1,22 +1,27 @@
 package;
 
 import flixel.util.FlxSpriteUtil;
+
 #if FEATURE_LUAMODCHART
 import LuaClass.LuaCamera;
 import LuaClass.LuaCharacter;
 import LuaClass.LuaNote;
 #end
+
 import lime.media.openal.AL;
 import Song.Event;
 import openfl.media.Sound;
+
 #if FEATURE_STEPMANIA
 import smTools.SMFile;
 #end
+
 #if sys
 import sys.io.File;
 import Sys;
 import sys.FileSystem;
 #end
+
 import openfl.ui.KeyLocation;
 import openfl.events.Event;
 import haxe.EnumTools;
@@ -24,9 +29,11 @@ import openfl.ui.Keyboard;
 import openfl.events.KeyboardEvent;
 import Replay.Ana;
 import Replay.Analysis;
+
 #if FEATURE_WEBM
 import webm.WebmPlayer;
 #end
+
 import flixel.input.keyboard.FlxKey;
 import haxe.Exception;
 import openfl.geom.Matrix;
@@ -77,6 +84,7 @@ import haxe.Json;
 import openfl.display.BlendMode;
 import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
+
 #if FEATURE_DISCORD
 import Discord.DiscordClient;
 #end
