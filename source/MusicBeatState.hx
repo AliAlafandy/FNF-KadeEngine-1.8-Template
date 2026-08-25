@@ -51,8 +51,8 @@ class MusicBeatState extends FlxUIState
 		#end
 	}
 
-	#else
-	public function addVirtualPad(?DPad, ?Action){};
+	/*#else
+	public function addVirtualPad(?DPad, ?Action){};*/
 	#end
 
 	public static var initSave:Bool = false;
@@ -61,7 +61,10 @@ class MusicBeatState extends FlxUIState
 
 	override function destroy()
 	{
+		#if mobileC
 		controls.removeFlxInput(trackedinputs);
+		#end
+
 		Application.current.window.onFocusIn.remove(onWindowFocusOut);
 		Application.current.window.onFocusIn.remove(onWindowFocusIn);
 		super.destroy();
