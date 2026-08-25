@@ -50,7 +50,6 @@ class MusicBeatSubstate extends FlxSubState
 
 	var trackedinputs:Array<FlxActionInput> = [];
 
-	// adding virtualpad to state
 	public function addVirtualPad(?DPad:FlxDPadMode, ?Action:FlxActionMode) {
 		_virtualpad = new FlxVirtualPad(DPad, Action);
 		_virtualpad.alpha = 0.75;
@@ -60,7 +59,9 @@ class MusicBeatSubstate extends FlxSubState
 		controls.trackedinputs = [];
 
 		#if android
-		controls.addAndroidBack();
+		controls.addAndroidBack(function() {
+			close();
+		});
 		#end
 	}
 
@@ -70,7 +71,6 @@ class MusicBeatSubstate extends FlxSubState
 
 	override function update(elapsed:Float)
 	{
-		// everyStep();
 		var nextStep = updateCurStep();
 
 		if (nextStep >= 0)
@@ -86,7 +86,6 @@ class MusicBeatSubstate extends FlxSubState
 			}
 			else if (nextStep < curStep)
 			{
-				// Song reset?
 				curStep = nextStep;
 				updateBeat();
 				stepHit();
@@ -132,7 +131,6 @@ class MusicBeatSubstate extends FlxSubState
 
 	public function beatHit():Void
 	{
-		// do literally nothing dumbass
 	}
 
 	function onWindowFocusOut():Void
