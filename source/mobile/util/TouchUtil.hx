@@ -2,6 +2,7 @@ package mobile.util;
 
 import flixel.FlxG;
 import flixel.input.touch.FlxTouch;
+import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 
@@ -217,10 +218,7 @@ class TouchUtil
 			var t2:FlxTouch = activeTouches[1];
 
 			var curDist:Float = FlxMath.distanceBetween(t1, t2);
-			var prevDist:Float = Math.sqrt(
-				Math.pow((t1.screenX - t1.deltaX) - (t2.screenX - t2.deltaX), 2) +
-				Math.pow((t1.screenY - t1.deltaY) - (t2.screenY - t2.deltaY), 2)
-			);
+			var prevDist:Float = FlxMath.distanceToPoint(t1.justPressedPosition, t2.justPressedPosition);
 
 			if (prevDist > 0)
 				return curDist / prevDist;
