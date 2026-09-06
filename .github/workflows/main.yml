@@ -18,8 +18,8 @@ permissions:
 
 jobs:
   Desktop:
-    name: ${{ matrix.name }}
-    if: ${{ inputs.buildDesktop }}
+    name: Build
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.buildDesktop }}
 
     strategy:
       fail-fast: false
@@ -60,8 +60,8 @@ jobs:
       artifactPath: ${{ matrix.artifactPath }}
 
   Mobile:
-    name: ${{ matrix.name }}
-    if: ${{ inputs.buildMobile }}
+    name: Build
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.buildMobile }}
 
     strategy:
       fail-fast: false
