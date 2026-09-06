@@ -4,33 +4,46 @@ on:
   workflow_call:
     inputs:
       name:
+        description: "Build name"
         required: true
         type: string
+
       os:
+        description: "GitHub Actions runner"
         required: true
         type: string
+
       buildArgs:
+        description: "Lime build arguments"
         required: true
         type: string
+
       artifactName:
+        description: "Artifact name"
         required: true
         type: string
+
       artifactPath:
+        description: "Artifact path"
         required: true
         type: string
 
 env:
-  HAXE_VERSION: 4.1.5
-  PROJECT_NAME: KadeEngine
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+  HAXE_VERSION: "4.1.5"
+  PROJECT_NAME: "KadeEngine"
+
+  ANDROID_NDK_VERSION: "21.4.7075529"
+  ANDROID_PLATFORM: "android-30"
+  ANDROID_BUILD_TOOLS: "30.0.3"
 
 jobs:
   build:
-    name: Build
+    name: ${{ inputs.name }}
     runs-on: ${{ inputs.os }}
+
     steps:
       - name: Checkout
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
 
       - name: Setup Haxe
         uses: krdlab/setup-haxe@master
@@ -39,56 +52,165 @@ jobs:
 
       - name: Update APT
         if: inputs.name == 'Linux'
+        shell: bash
         run: |
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
-          sudo apt-get update --fix-missing
+          sudo apt-get update
 
-      - name: Install libVLC
+      - name: Install Linux dependencies
         if: inputs.name == 'Linux'
-        run: sudo apt-get install -y libvlc-dev libvlccore-dev
+        shell: bash
+        run: |
+          sudo apt-get install -y \
+            libvlc-dev \
+            libvlccore-dev \
+            libvlc5 \
+            libvlccore9
 
-      - name: Setup XCode
+      - name: Setup Xcode
         if: inputs.name == 'iOS'
-        uses: maxim-lobanov/setup-xcode@master
+        uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.4'
+          xcode-version: "15.4"
 
-      - name: Install Libraries
+      - name: Setup Android
+        if: startsWith(inputs.name, 'Android')
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        if: startsWith(inputs.name, 'Android')
+        shell: bash
+        run: |
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;${ANDROID_PLATFORM}" \
+            "build-tools;${ANDROID_BUILD_TOOLS}" \
+            "ndk;${ANDROID_NDK_VERSION}"
+
+          yes | sdkmanager --licenses >/dev/null || true
+
+      - name: Configure Android environment
+        if: startsWith(inputs.name, 'Android')
+        shell: bash
+        run: |
+          export ANDROID_NDK_ROOT="$ANDROID_HOME/ndk/${ANDROID_NDK_VERSION}"
+
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT"
+          echo "JAVA_HOME=$JAVA_HOME"
+
+          echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT" >> "$GITHUB_ENV"
+
+          haxelib run lime config ANDROID_SDK "$ANDROID_HOME"
+          haxelib run lime config ANDROID_NDK_ROOT "$ANDROID_NDK_ROOT"
+          haxelib run lime config JAVA_HOME "$JAVA_HOME"
+          haxelib run lime config ANDROID_SETUP true
+
+      - name: Install Haxe libraries
+        shell: bash
         run: |
           haxelib install hmm --quiet
           haxelib run hmm install --quiet
 
-      - name: Configure Android x64
-        if: inputs.name == 'Android x64'
+      - name: Show build environment
+        shell: bash
         run: |
-          haxelib run lime config ANDROID_SDK $ANDROID_HOME
-          haxelib run lime config ANDROID_NDK_ROOT $ANDROID_NDK_LATEST_HOME
-          haxelib run lime config JAVA_HOME $JAVA_HOME_17_arm64
-          haxelib run lime config ANDROID_SETUP true
+          echo "=========================================="
+          echo "Build: ${{ inputs.name }}"
+          echo "OS: ${{ inputs.os }}"
+          echo "Arguments: ${{ inputs.buildArgs }}"
+          echo "=========================================="
 
-      - name: Configure Android x32
-        if: inputs.name == 'Android x32'
-        run: |
-          haxelib run lime config ANDROID_SDK $ANDROID_HOME
-          haxelib run lime config ANDROID_NDK_ROOT $ANDROID_NDK_LATEST_HOME
-          haxelib run lime config JAVA_HOME $JAVA_HOME_17_arm64
-          haxelib run lime config ANDROID_SETUP true
+          haxe --version
+
+          echo "------------------------------------------"
+          echo "Haxelib"
+          echo "------------------------------------------"
+
+          haxelib list
+
+          if [[ "${{ inputs.name }}" == Android* ]]; then
+            echo "------------------------------------------"
+            echo "Android"
+            echo "------------------------------------------"
+
+            echo "ANDROID_HOME=$ANDROID_HOME"
+            echo "ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT"
+            echo "JAVA_HOME=$JAVA_HOME"
+
+            "$ANDROID_HOME/platform-tools/adb" version || true
+          fi
 
       - name: Compile
-        run: haxelib run lime build ${{ inputs.buildArgs }}
-
-      - name: Make IPA
-        if: inputs.name == 'iOS'
+        shell: bash
         run: |
-          cd export/release/ios/build/Release-iphoneos
-          mkdir Payload
-          mv *.app Payload
-          zip -r ${{ env.PROJECT_NAME }}.ipa Payload
+          set -e
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@main
+          echo "Building ${{ inputs.name }}"
+
+          haxelib run lime build ${{ inputs.buildArgs }}
+
+      - name: Create iOS IPA
+        if: inputs.name == 'iOS'
+        shell: bash
+        run: |
+          set -e
+
+          IOS_DIR="export/release/ios/build/Release-iphoneos"
+
+          if [ ! -d "$IOS_DIR" ]; then
+            echo "ERROR: iOS output directory was not created:"
+            echo "$IOS_DIR"
+            exit 1
+          fi
+
+          cd "$IOS_DIR"
+
+          APP_FILE=$(find . -maxdepth 1 -type d -name "*.app" -print -quit)
+
+          if [ -z "$APP_FILE" ]; then
+            echo "ERROR: No .app bundle was produced."
+            exit 1
+          fi
+
+          rm -rf Payload
+          mkdir -p Payload
+
+          mv "$APP_FILE" Payload/
+
+          zip -r "${PROJECT_NAME}.ipa" Payload
+
+          echo "Created:"
+          ls -lh "${PROJECT_NAME}.ipa"
+
+      - name: Verify Android APK
+        if: startsWith(inputs.name, 'Android')
+        shell: bash
+        run: |
+          set -e
+
+          APK_DIR="export/release/android/bin/app/build/outputs/apk/release"
+
+          echo "Checking Android output:"
+          echo "$APK_DIR"
+
+          if [ ! -d "$APK_DIR" ]; then
+            echo "ERROR: Android output directory does not exist."
+            exit 1
+          fi
+
+          find "$APK_DIR" -maxdepth 1 -type f -name "*.apk" -print
+
+          APK_COUNT=$(find "$APK_DIR" -maxdepth 1 -type f -name "*.apk" | wc -l)
+
+          if [ "$APK_COUNT" -eq 0 ]; then
+            echo "ERROR: No APK was produced."
+            exit 1
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifactName }}
           path: ${{ inputs.artifactPath }}
           if-no-files-found: error
+          retention-days: 14
