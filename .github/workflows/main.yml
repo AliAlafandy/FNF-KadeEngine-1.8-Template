@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       buildDesktop:
-        description: "Build Windows (x64 and x32), Linux and MacOS"
+        description: "Build Desktop Target"
         type: boolean
         default: true
 
       buildMobile:
-        description: "Build Android (x64 and x32) and iOS"
+        description: "Build Mobile Target"
         type: boolean
         default: true
 
@@ -19,7 +19,7 @@ permissions:
 jobs:
   Desktop:
     name: ${{ matrix.name }}
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.buildDesktop }}
+    if: ${{ inputs.buildDesktop }}
 
     strategy:
       fail-fast: false
@@ -29,14 +29,14 @@ jobs:
           - name: Windows x64
             os: windows-2022
             buildArgs: windows
-            artifactName: Windows-x64
-            artifactPath: export/release/windows/bin/*
+            artifactName: Windows x64
+            artifactPath: export\release\windows\bin\*
 
           - name: Windows x32
             os: windows-2022
             buildArgs: "windows -32 -D HXCPP_M32 -D 32bits"
-            artifactName: Windows-x32
-            artifactPath: export/32bit/windows/bin/*
+            artifactName: Windows x32
+            artifactPath: export\32bit\windows\bin\*
 
           - name: Linux
             os: ubuntu-24.04
@@ -45,7 +45,7 @@ jobs:
             artifactPath: export/release/linux/bin/*
 
           - name: MacOS
-            os: macos-14
+            os: macos-15
             buildArgs: mac
             artifactName: MacOS
             artifactPath: export/release/macos/bin/*
@@ -61,7 +61,7 @@ jobs:
 
   Mobile:
     name: ${{ matrix.name }}
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.buildMobile }}
+    if: ${{ inputs.buildMobile }}
 
     strategy:
       fail-fast: false
@@ -69,19 +69,19 @@ jobs:
       matrix:
         include:
           - name: Android x64
-            os: macos-14
+            os: macos-15
             buildArgs: "android -ONLY_ARM64"
             artifactName: Android x64
             artifactPath: export/release/android/bin/app/build/outputs/apk/release/*.apk
 
           - name: Android x32
-            os: macos-14
+            os: macos-15
             buildArgs: "android -ONLY_ARMV7"
             artifactName: Android x32
             artifactPath: export/release/android/bin/app/build/outputs/apk/release/*.apk
 
           - name: iOS
-            os: macos-14
+            os: macos-15
             buildArgs: "ios -nosign"
             artifactName: iOS
             artifactPath: export/release/ios/build/Release-iphoneos/*.ipa
