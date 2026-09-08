@@ -1,29 +1,13 @@
 name: Main
+on: workflow_dispatch
 
-on:
-  workflow_dispatch:
-    inputs:
-      buildDesktop:
-        description: "Build Desktop Target"
-        type: boolean
-        default: true
-
-      buildMobile:
-        description: "Build Mobile Target"
-        type: boolean
-        default: true
-
-permissions:
-  contents: read
+# permissions: write-all
 
 jobs:
-  Desktop:
+  Build:
     name: ${{ matrix.name }}
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.buildDesktop }}
-
     strategy:
       fail-fast: false
-
       matrix:
         include:
           - name: Windows x64
@@ -31,7 +15,6 @@ jobs:
             buildArgs: windows
             artifactName: Windows x64
             artifactPath: export\release\windows\bin\*
-
           - name: Windows x32
             os: windows-2022
             buildArgs: "windows -32 -D HXCPP_M32 -D 32bits"
@@ -39,7 +22,7 @@ jobs:
             artifactPath: export\32bit\windows\bin\*
 
           - name: Linux
-            os: ubuntu-24.04
+            os: ubuntu-22.04
             buildArgs: linux
             artifactName: Linux
             artifactPath: export/release/linux/bin/*
@@ -50,30 +33,11 @@ jobs:
             artifactName: MacOS
             artifactPath: export/release/macos/bin/*
 
-    uses: ./.github/workflows/build.yml
-
-    with:
-      name: ${{ matrix.name }}
-      os: ${{ matrix.os }}
-      buildArgs: ${{ matrix.buildArgs }}
-      artifactName: ${{ matrix.artifactName }}
-      artifactPath: ${{ matrix.artifactPath }}
-
-  Mobile:
-    name: ${{ matrix.name }}
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.buildMobile }}
-
-    strategy:
-      fail-fast: false
-
-      matrix:
-        include:
           - name: Android x64
             os: macos-15
             buildArgs: "android -ONLY_ARM64"
             artifactName: Android x64
             artifactPath: export/release/android/bin/app/build/outputs/apk/release/*.apk
-
           - name: Android x32
             os: macos-15
             buildArgs: "android -ONLY_ARMV7"
@@ -87,11 +51,9 @@ jobs:
             artifactPath: export/release/ios/build/Release-iphoneos/*.ipa
 
     uses: ./.github/workflows/build.yml
-
     with:
       name: ${{ matrix.name }}
       os: ${{ matrix.os }}
       buildArgs: ${{ matrix.buildArgs }}
       artifactName: ${{ matrix.artifactName }}
       artifactPath: ${{ matrix.artifactPath }}
-      
