@@ -5,12 +5,7 @@
       "type": "git",
       "dir": null,
       "ref": "main",
-      "url": "https://github.com/Ethantobot11/lime2"
-    },
-    {
-      "name": "lime-samples",
-      "type": "haxelib",
-      "version": "7.0.0"
+      "url": "https://github.com/AlafandyPorting/lime-0.7.3"
     },
     {
       "name": "openfl",
@@ -23,24 +18,16 @@
       "version": "5.2.2"
     },
     {
+      "name": "hxcpp",
+      "type": "git",
+      "dir": null,
+      "ref": "main",
+      "url": "https://github.com/AlafandyPorting/hxcpp-0.7.3"
+    },
+    {
       "name": "flixel-tools",
       "type": "haxelib",
       "version": "1.5.1"
-    },
-    {
-      "name": "flixel-demos",
-      "type": "haxelib",
-      "version": "3.2.0"
-    },
-    {
-      "name": "flixel-templates",
-      "type": "haxelib",
-      "version": "2.7.0"
-    },
-    {
-      "name": "flixel-addons",
-      "type": "haxelib",
-      "version": "2.11.0"
     },
     {
       "name": "flixel-ui",
@@ -53,16 +40,9 @@
       "version": "2.5.0"
     },
     {
-      "name": "hxcpp",
-      "type": "git",
-      "dir": null,
-      "ref": "main",
-      "url": "https://github.com/AlafandyPorting/hxcpp-0.7.3"
-    },
-    {
-      "name": "actuate",
+      "name": "flixel-addons",
       "type": "haxelib",
-      "version": null
+      "version": "2.11.0"
     },
     {
       "name": "faxe",
@@ -92,10 +72,13 @@
     },
     {
       "name": "linc_luajit",
-      "type": "git",
-      "dir": null,
-      "ref": "master",
-      "url": "https://github.com/nebulazorua/linc_luajit.git"
+      "type": "haxelib",
+      "version": null
+    },
+    {
+      "name": "actuate",
+      "type": "haxelib",
+      "version": null
     },
     {
       "name": "hxvm-luajit",
