@@ -74,8 +74,8 @@
       "name": "linc_luajit",
       "type": "git",
       "dir": null,
-      "ref": "main",
-      "url": "https://github.com/AlafandyPorting/linc_luajit-0.6.3"
+      "ref": "master",
+      "url": "https://github.com/nebulazorua/linc_luajit"
     },
     {
       "name": "actuate",
