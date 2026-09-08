@@ -15,22 +15,23 @@ install:
   - tar -xf haxe-4.1.5-linux64.tar.gz -C $HAXE_INSTALLDIR
   - export PATH=$PATH:$HAXE_INSTALLDIR/haxe_20201231082044_5e33a78aa
   - mkdir $HAXELIB_ROOT && haxelib setup $HAXELIB_ROOT
-  - haxelib install lime 7.9.0
-  - haxelib install openfl
-  - haxelib install flixel
+  - haxelib git lime https://github.com/AlafandyPorting/lime-0.7.3
+  - haxelib install openfl 9.2.2
+  - haxelib install flixel 5.2.2
+  - haxelib git hxcpp https://github.com/AlafandyPorting/hxcpp-0.7.3
   - haxelib run lime setup flixel
   - haxelib run lime setup
-  - haxelib install flixel-tools
-  - haxelib install flixel-addons
-  - haxelib install flixel-ui
-  - haxelib install hscript
+  - haxelib install flixel-tools 1.5.1
+  - haxelib install flixel-addons 2.11.0
+  - haxelib install flixel-ui 2.5.0
+  - haxelib install hscript 2.5.0
   - haxelib git faxe https://github.com/uhrobots/faxe
-  - haxelib git polymod https://github.com/larsiusprime/polymod.git
+  - haxelib install polymod 1.3.1
   - haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
-  - haxelib git extension-webm https://github.com/KadeDev/extension-webm
+  - haxelib git extension-webm https://github.com/AlafandyPorting/extension-webm
   - haxelib git hxvm-luajit https://github.com/nebulazorua/hxvm-luajit
   - haxelib run lime rebuild extension-webm linux
-  - haxelib git linc_luajit https://github.com/nebulazorua/linc_luajit.git
+  - haxelib install linc_luajit
   - haxelib install actuate
   - haxelib list
   - cd /home/appveyor/projects/kade-engine-linux
